@@ -228,16 +228,19 @@ def draw_og_image(out_path):
     d.text((sub_x, sub_y), subtitle, font=font_subtitle, fill=(255, 230, 245))
 
     # === 流程列：上傳 → 抓封面 → AI 接續分鏡 ===
+    # PIL 在 RGB 模式下會忽略 fill 的 alpha 通道，所以這裡改用「白底 + 深紫字」做高對比
     flow_text = "上傳 MV  →  抓封面  →  AI 接續 15-30 秒分鏡"
     bbox = d.textbbox((0, 0), flow_text, font=font_flow)
     fw = bbox[2] - bbox[0]
+    fh = bbox[3] - bbox[1]
     flow_x = (W - fw) // 2
     flow_y = sub_y + 90
-    # 流程膠囊背景
-    pad_x, pad_y = 28, 14
-    capsule = (flow_x - pad_x, flow_y - pad_y, flow_x + fw + pad_x, flow_y + 40 + pad_y)
-    d.rounded_rectangle(capsule, radius=30, fill=(255, 255, 255, 70))
-    d.text((flow_x, flow_y), flow_text, font=font_flow, fill=(255, 255, 255))
+    # 流程膠囊背景（不透明白色）
+    pad_x, pad_y = 36, 18
+    capsule = (flow_x - pad_x, flow_y - pad_y, flow_x + fw + pad_x, flow_y + fh + pad_y)
+    d.rounded_rectangle(capsule, radius=36, fill=(255, 255, 255))
+    # 文字深紫色（高對比、好讀）
+    d.text((flow_x, flow_y), flow_text, font=font_flow, fill=(124, 58, 237))
 
     # === 左下：URL ===
     url = "cagoooo.github.io/music-cover-storyboard"
