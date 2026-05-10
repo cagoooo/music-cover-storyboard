@@ -95,7 +95,7 @@ function buildSystemPrompt(selectedStyles, opts = {}) {
       advancedSection += `→ 處理方式：把這個情感、意象、敘事走向融入每段的 mood / action / 視覺隱喻。但不要把歌詞**直接寫進 prompt**（AI 影片平台不需要看到歌詞文字本身），要轉化成畫面語言。\n\n`;
     }
     if (hasCharacter) {
-      advancedSection += `### 👤 主角外觀（每段 prompt_zh 與 prompt_en 都必須完整寫出這個外觀，讓 Veo / Sora 跨段保持角色一致）\n${opts.characterDescription.trim()}\n\n`;
+      advancedSection += `### 👤 主角外觀（每段 prompt_zh 與 prompt_en 都必須完整寫出這個外觀，讓 Veo / Anijam / Runway 跨段保持角色一致）\n${opts.characterDescription.trim()}\n\n`;
       advancedSection += `→ 處理方式：每一段 prompt 描述主體時，**完整重述這個外觀**（不要省略、不要用「同上」），這樣每個短影片片段才能跨段角色一致。\n\n`;
     }
   }
@@ -104,7 +104,7 @@ function buildSystemPrompt(selectedStyles, opts = {}) {
 
 你的任務：把這張封面當作**下一段 20-30 秒短影片的第 0 秒**，幫使用者編寫**接續這個畫面**的後續分鏡腳本。
 
-**這次的產出將餵給 Google Flow、Canva AI、Sora、Veo、Runway、Kling、海螺 等 AI 影片平台。**
+**這次的產出將餵給 Google Flow、Canva AI、Anijam、Veo、Runway、Kling、海螺 等 AI 影片平台。**
 這些平台多半「一次只能產 3-5 秒短片」，所以使用者的工作流是：
   1. 把分段 1 的 prompt 貼到平台 → 產出 5 秒影片 segment-1.mp4
   2. 把分段 2 的 prompt 貼到平台 → 產出 5 秒影片 segment-2.mp4

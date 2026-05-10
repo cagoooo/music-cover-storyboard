@@ -5,7 +5,7 @@
 
 const STYLES = {
   cinematic: {
-    label: '寫實電影級（Sora / Veo）',
+    label: '寫實電影級（Veo / Runway）',
     guideline:
       '電影感寫實風。完整鏡頭語言：推軌（dolly）、跟拍（tracking）、慢動作（slow motion）、淺景深（shallow DoF）、特寫（close-up）、廣角（wide shot）。色調採電影 LUT（teal & orange / desaturated cinematic），打光自然偏戲劇化。場景具體可拍攝，避免抽象詞。'
   },

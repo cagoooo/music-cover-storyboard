@@ -5,29 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#7c3aed" />
   <title>封面接故事 · 音樂影片分鏡產生器</title>
-  <meta name="description" content="上傳 Gemini Veo / Suno 等 AI 音樂影片，自動抓出封面，再用 AI 接續產出 15-30 秒的後續分鏡，一鍵貼回 Sora / Veo / Runway / 海螺繼續創作。" />
+  <meta name="description" content="上傳 Gemini Veo / Suno 等 AI 音樂影片，自動抓出封面，再用 AI 接續產出 15-30 秒的後續分鏡，一鍵貼回 Google Flow / Canva AI / Anijam / 海螺 / Runway 繼續創作。" />
 
   <!-- Open Graph -->
   <meta property="og:title" content="封面接故事 · 音樂影片分鏡產生器" />
   <meta property="og:description" content="上傳 MV → 抓出封面 → 一鍵接續 15-30 秒分鏡。給老師、家長、學生免費使用。" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://cagoooo.github.io/music-cover-storyboard/" />
-  <meta property="og:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.8.0" />
+  <meta property="og:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.8.1" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="封面接故事 · 音樂影片分鏡產生器（紫粉漸層 + 影格與音符圖示）" />
   <meta property="og:locale" content="zh_TW" />
   <meta property="og:site_name" content="封面接故事" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.8.0" />
+  <meta name="twitter:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.8.1" />
 
   <!-- Favicons：SVG 給現代瀏覽器（最清晰）、ICO 給舊版 fallback、PNG 給 PWA / Android -->
-  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1.8.0" />
-  <link rel="icon" type="image/x-icon" href="favicon.ico?v=1.8.0" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=1.8.0" />
-  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=1.8.0" />
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1.8.0" />
-  <link rel="manifest" href="manifest.webmanifest?v=1.8.0" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1.8.1" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=1.8.1" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=1.8.1" />
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=1.8.1" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1.8.1" />
+  <link rel="manifest" href="manifest.webmanifest?v=1.8.1" />
 
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
@@ -61,7 +61,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="styles.css?v=1.8.0" />
+  <link rel="stylesheet" href="styles.css?v=1.8.1" />
 
   <!-- Cloudflare Turnstile -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
@@ -192,7 +192,7 @@
               <span class="char-count" data-target="lyrics-input">0 / 500</span>
             </div>
             <div class="advanced-field">
-              <label for="character-input" class="advanced-label">👤 主角描述（讓 Veo / Sora 跨段角色一致）</label>
+              <label for="character-input" class="advanced-label">👤 主角描述（讓 Veo / Anijam 跨段角色一致）</label>
               <textarea id="character-input" rows="2" maxlength="300" placeholder="（可選）描述主角外觀，每段 prompt 都會帶這段描述。&#10;例：「一位戴黑框眼鏡的小學女生，綠色畢業學士服，黑色長髮綁雙馬尾，膚色白皙」"></textarea>
               <span class="char-count" data-target="character-input">0 / 300</span>
             </div>
@@ -270,7 +270,7 @@
               <span class="platform-card-hint">Gemini Veo · 免費試用</span>
               <span class="platform-card-lang">英文 prompt</span>
             </a>
-            <a class="platform-card" data-platform-id="canva" data-platform-name="Canva AI" data-lang="zh" href="https://www.canva.com/ai-video-generator/" target="_blank" rel="noopener">
+            <a class="platform-card" data-platform-id="canva" data-platform-name="Canva AI" data-lang="zh" href="https://www.canva.com/" target="_blank" rel="noopener">
               <span class="platform-card-icon" style="background:linear-gradient(135deg,#7d2ae8,#00c4cc);color:white;">🎨</span>
               <span class="platform-card-name">Canva AI</span>
               <span class="platform-card-hint">UI 友善 · 學校 Pro</span>
@@ -282,10 +282,10 @@
               <span class="platform-card-hint">MiniMax · 免費試用</span>
               <span class="platform-card-lang">中文 prompt 最適</span>
             </a>
-            <a class="platform-card" data-platform-id="sora" data-platform-name="Sora" data-lang="en" href="https://sora.com/" target="_blank" rel="noopener">
-              <span class="platform-card-icon" style="background:linear-gradient(135deg,#0f172a,#000);color:white;">⚡</span>
-              <span class="platform-card-name">Sora</span>
-              <span class="platform-card-hint">OpenAI · 需 Plus</span>
+            <a class="platform-card" data-platform-id="anijam" data-platform-name="Anijam" data-lang="en" href="https://app.anijam.ai/" target="_blank" rel="noopener">
+              <span class="platform-card-icon" style="background:linear-gradient(135deg,#06b6d4,#3b82f6);color:white;">🎞️</span>
+              <span class="platform-card-name">Anijam</span>
+              <span class="platform-card-hint">很好用的 AI 動畫</span>
               <span class="platform-card-lang">英文 prompt</span>
             </a>
             <a class="platform-card" data-platform-id="runway" data-platform-name="Runway" data-lang="en" href="https://runwayml.com/" target="_blank" rel="noopener">
@@ -427,7 +427,7 @@
           <li class="flex gap-3">
             <div class="w-8 h-8 shrink-0 rounded-full bg-cyan-100 text-cyan-700 font-black flex items-center justify-center">5</div>
             <div>
-              <strong class="text-slate-900">一鍵跳到平台產畫面</strong> — 每段下方有 <strong>「🚀 跳到 AI 平台產這段」</strong>紫粉按鈕，點下去自動：(1) 把該段 prompt 複製到剪貼簿；(2) 開新分頁到你選的平台（<strong>Google Flow / Canva AI / 海螺 / Sora / Runway / 可靈 / Pika / Meta AI</strong> 八選一）。在平台輸入框直接「貼上」就能產畫面，超快！
+              <strong class="text-slate-900">一鍵跳到平台產畫面</strong> — 每段下方有 <strong>「🚀 跳到 AI 平台產這段」</strong>紫粉按鈕，點下去自動：(1) 把該段 prompt 複製到剪貼簿；(2) 開新分頁到你選的平台（<strong>Google Flow / Canva AI / 海螺 / Anijam / Runway / 可靈 / Pika / Meta AI</strong> 八選一）。在平台輸入框直接「貼上」就能產畫面，超快！
             </div>
           </li>
           <li class="flex gap-3">
@@ -439,7 +439,7 @@
         </ol>
         <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800 space-y-2">
           <p>💡 <strong>老師小提示</strong>：如果學生有自己的歌詞，可以先把封面下載下來貼到 PowerPoint，標出你想要的分鏡重點再產出。</p>
-          <p>🎯 <strong>為什麼要分段</strong>：Flow / Canva / Sora 等多數平台一次只能產 3-5 秒短片。我們已經幫你把整個分鏡切成適合餵的小段，每段都是<strong>獨立完整的 prompt</strong>，貼進去就能產畫面。</p>
+          <p>🎯 <strong>為什麼要分段</strong>：Flow / Canva / Anijam / 海螺 等多數平台一次只能產 3-5 秒短片。我們已經幫你把整個分鏡切成適合餵的小段，每段都是<strong>獨立完整的 prompt</strong>，貼進去就能產畫面。</p>
           <p>📦 <strong>整體版備選</strong>：每張卡底部「整體版 prompt」收疊區可一次產整部（給支援長 prompt 的平台）。</p>
         </div>
         <button id="btn-help-ok" type="button" class="w-full px-4 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold transition">開始使用</button>
@@ -471,7 +471,7 @@
     </div>
   </footer>
 
-  <script src="config.js?v=1.8.0"></script>
+  <script src="config.js?v=1.8.1"></script>
 
   <!-- Google Analytics 4 / Firebase Analytics（依 config.gaMeasurementId 動態載入） -->
   <script>
@@ -493,7 +493,7 @@
     })();
   </script>
 
-  <script src="app.js?v=1.8.0"></script>
+  <script src="app.js?v=1.8.1"></script>
 
   <!-- Service Worker 註冊 -->
   <script>

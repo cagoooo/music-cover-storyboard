@@ -4,7 +4,7 @@
 
   // ---- 風格清單（前端只負責 id + emoji + label，提示詞在後端）----
   const STYLES = [
-    { id: 'cinematic',     emoji: '🎬', label: '寫實電影級', sub: 'Sora / Veo' },
+    { id: 'cinematic',     emoji: '🎬', label: '寫實電影級', sub: 'Veo / Runway' },
     { id: 'suno_mv',       emoji: '🎵', label: '抒情 MV',     sub: 'Suno 風' },
     { id: 'storyboard_kid',emoji: '🎨', label: '童趣動畫板', sub: '給小朋友' },
     { id: 'anime_jp',      emoji: '🇯🇵', label: '日系動漫',   sub: '二次元' },
@@ -697,7 +697,7 @@
         <div class="result-card-body">
           <div class="segments-intro">
             <p class="result-card-section-title">🎬 分段提示詞</p>
-            <p class="segments-hint">每段獨立可貼到 Google Flow / Canva AI / Sora / Veo / Runway / 海螺，產出 3-6 秒短片，最後串接成完整影片</p>
+            <p class="segments-hint">每段獨立可貼到 Google Flow / Canva AI / Anijam / 海螺 / Runway 等平台，產出 3-6 秒短片，最後串接成完整影片</p>
           </div>
           <div class="segments-list">${segmentRows}</div>
 
@@ -1313,7 +1313,7 @@
   function shareApp() {
     openShareSheet({
       title: '封面接故事 · 音樂影片分鏡產生器',
-      text: '🎬 把 AI 音樂影片接成完整故事！\n上傳 MV → 抓封面 → AI 自動產出 4-6 段獨立提示詞，貼回 Sora / Veo / Flow / Canva 一段一段產，最後串成一支完整短片！\n免費、不用登入。',
+      text: '🎬 把 AI 音樂影片接成完整故事！\n上傳 MV → 抓封面 → AI 自動產出 4-6 段獨立提示詞，貼回 Google Flow / Canva AI / Anijam / 海螺 一段一段產，最後串成一支完整短片！\n免費、不用登入。',
       url: 'https://cagoooo.github.io/music-cover-storyboard/',
     });
   }
@@ -1324,7 +1324,7 @@
     const totalLabel = card.querySelector('.result-card-header span:last-child')?.textContent.trim() || '';
     openShareSheet({
       title: `${styleName} · 封面接故事`,
-      text: `✨ 我用「封面接故事」產了一個【${styleName}】風格分鏡（${totalLabel}）！\nAI 自動拆成獨立段提示詞，貼回 Google Flow / Canva AI / Sora / Veo 一段一段產出短片，超好用。`,
+      text: `✨ 我用「封面接故事」產了一個【${styleName}】風格分鏡（${totalLabel}）！\nAI 自動拆成獨立段提示詞，貼回 Google Flow / Canva AI / Anijam / 海螺 一段一段產出短片，超好用。`,
       url: 'https://cagoooo.github.io/music-cover-storyboard/',
     });
   }

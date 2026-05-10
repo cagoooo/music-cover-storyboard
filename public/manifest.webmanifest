@@ -1,7 +1,7 @@
 {
   "name": "封面接故事 · 音樂影片分鏡產生器",
   "short_name": "封面接故事",
-  "description": "上傳 MV → 抓出封面 → AI 接續 15-30 秒分鏡，貼回 Sora / Veo / 海螺繼續創作。",
+  "description": "上傳 MV → 抓出封面 → AI 接續 15-30 秒分鏡，貼回 Google Flow / Canva AI / Anijam / 海螺 繼續創作。",
   "lang": "zh-Hant",
   "dir": "ltr",
   "start_url": "./",
