@@ -195,6 +195,84 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* ============================================================
+   影片播放/暫停按鈕（浮在影片中央）
+   ============================================================ */
+
+.video-preview-wrap {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.video-play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 72px;
+  height: 72px;
+  border: 3px solid rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.92), rgba(236, 72, 153, 0.92));
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 32px -6px rgba(0, 0, 0, 0.55), 0 0 0 4px rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: opacity .25s, transform .15s ease, background .15s, box-shadow .15s;
+  padding: 0;
+}
+
+.video-play-btn:hover {
+  background: linear-gradient(135deg, #9333ea, #db2777);
+  transform: translate(-50%, -50%) scale(1.08);
+  box-shadow: 0 14px 36px -4px rgba(124, 58, 237, .55), 0 0 0 4px rgba(255, 255, 255, 0.25);
+}
+
+.video-play-btn:active {
+  transform: translate(-50%, -50%) scale(0.96);
+}
+
+.video-play-btn:focus-visible {
+  outline: 3px solid #fbbf24;
+  outline-offset: 4px;
+}
+
+.video-play-btn .video-play-icon,
+.video-play-btn .video-pause-icon {
+  width: 32px;
+  height: 32px;
+}
+
+/* 預設顯示「播放」icon、隱藏「暫停」icon */
+.video-play-btn .video-pause-icon { display: none; }
+
+/* 播放中：按鈕淡出（hover 時才顯示）+ 圖示換成「暫停」 */
+.video-preview-wrap.playing .video-play-btn {
+  opacity: 0;
+  pointer-events: auto;
+}
+.video-preview-wrap.playing:hover .video-play-btn,
+.video-preview-wrap.playing:focus-within .video-play-btn {
+  opacity: 1;
+}
+.video-preview-wrap.playing .video-play-icon { display: none; }
+.video-preview-wrap.playing .video-pause-icon { display: inline-block; }
+
+/* 影片還沒載入前，按鈕也藏起來 */
+.video-preview-wrap:not(.has-video) .video-play-btn { display: none; }
+
+/* mobile 微縮 */
+@media (max-width: 480px) {
+  .video-play-btn { width: 60px; height: 60px; border-width: 2px; }
+  .video-play-btn .video-play-icon,
+  .video-play-btn .video-pause-icon { width: 26px; height: 26px; }
+}
+
+/* ============================================================
    分段提示詞 segments — 每段獨立可貼到 AI 影片平台
    ============================================================ */
 

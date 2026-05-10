@@ -12,22 +12,22 @@
   <meta property="og:description" content="上傳 MV → 抓出封面 → 一鍵接續 15-30 秒分鏡。給老師、家長、學生免費使用。" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://cagoooo.github.io/music-cover-storyboard/" />
-  <meta property="og:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.3.0" />
+  <meta property="og:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.3.1" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="封面接故事 · 音樂影片分鏡產生器（紫粉漸層 + 影格與音符圖示）" />
   <meta property="og:locale" content="zh_TW" />
   <meta property="og:site_name" content="封面接故事" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.3.0" />
+  <meta name="twitter:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.3.1" />
 
   <!-- Favicons：SVG 給現代瀏覽器（最清晰）、ICO 給舊版 fallback、PNG 給 PWA / Android -->
-  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1.3.0" />
-  <link rel="icon" type="image/x-icon" href="favicon.ico?v=1.3.0" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=1.3.0" />
-  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=1.3.0" />
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1.3.0" />
-  <link rel="manifest" href="manifest.webmanifest?v=1.3.0" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1.3.1" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=1.3.1" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=1.3.1" />
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=1.3.1" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1.3.1" />
+  <link rel="manifest" href="manifest.webmanifest?v=1.3.1" />
 
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
@@ -61,7 +61,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="styles.css?v=1.3.0" />
+  <link rel="stylesheet" href="styles.css?v=1.3.1" />
 
   <!-- Cloudflare Turnstile -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
@@ -126,10 +126,21 @@
       <div class="p-4 sm:p-6 space-y-4">
         <div class="grid sm:grid-cols-2 gap-4 sm:gap-6">
           <div>
-            <p class="text-xs font-medium text-slate-500 mb-2">影片預覽</p>
-            <video id="video" class="w-full rounded-xl bg-black aspect-video" preload="metadata" muted playsinline></video>
+            <p class="text-xs font-medium text-slate-500 mb-2">影片預覽（點影片或按鈕可播放/暫停）</p>
+            <div id="video-preview-wrap" class="video-preview-wrap">
+              <video id="video" class="w-full rounded-xl bg-black aspect-video cursor-pointer" preload="metadata" muted playsinline></video>
+              <button id="btn-play-pause" type="button" class="video-play-btn" aria-label="播放或暫停影片" title="播放 / 暫停">
+                <svg class="video-play-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <polygon points="7,4 21,12 7,20" />
+                </svg>
+                <svg class="video-pause-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <rect x="6" y="4" width="4" height="16" rx="1" />
+                  <rect x="14" y="4" width="4" height="16" rx="1" />
+                </svg>
+              </button>
+            </div>
             <div class="mt-3">
-              <input id="time-slider" type="range" min="0" max="100" step="0.1" value="0" class="w-full accent-brand-600" />
+              <input id="time-slider" type="range" min="0" max="100" step="0.1" value="0" class="w-full accent-brand-600" aria-label="影片時間軸（拖到哪一秒就抓哪一幀當封面）" />
               <div class="flex justify-between text-xs text-slate-500 mt-1">
                 <span id="time-current">0.0s</span>
                 <span id="time-total">0.0s</span>
@@ -288,8 +299,8 @@
     </div>
   </footer>
 
-  <script src="config.js?v=1.3.0"></script>
-  <script src="app.js?v=1.3.0"></script>
+  <script src="config.js?v=1.3.1"></script>
+  <script src="app.js?v=1.3.1"></script>
 
   <!-- Service Worker 註冊 -->
   <script>

@@ -10,7 +10,7 @@
  *   activate 時把舊版 cache 全部刪掉，立刻接管所有頁面。
  */
 
-const CACHE_VERSION = '1.3.0';
+const CACHE_VERSION = '1.3.1';
 const STATIC_CACHE = `mcs-static-v${CACHE_VERSION}`;
 const HTML_CACHE   = `mcs-html-v${CACHE_VERSION}`;
 

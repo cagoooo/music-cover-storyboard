@@ -43,6 +43,8 @@
   const btnHelpClose   = $('btn-help-close');
   const btnHelpOk      = $('btn-help-ok');
   const helpModal      = $('help-modal');
+  const videoWrap      = $('video-preview-wrap');
+  const btnPlayPause   = $('btn-play-pause');
 
   // ---- 狀態 ----
   let currentVideoUrl = null;
@@ -50,6 +52,7 @@
   let selectedStyleIds = new Set(STYLES.map(s => s.id));
   let turnstileWidgetId = null;
   let turnstileToken = null;
+  let isScrubbing = false;     // 使用者正在拖時間軸（避免 timeupdate 衝突）
 
   const MAX_FILE_BYTES = 200 * 1024 * 1024; // 200MB
 
@@ -182,6 +185,7 @@
 
       frameSection.classList.remove('hidden');
       generateSection.classList.remove('hidden');
+      if (videoWrap) videoWrap.classList.add('has-video');  // 啟用播放按鈕顯示
       // 第一幀立刻抓
       extractFrameAt(0).catch(() => {});
       // 滾動讓使用者看到下個 step
@@ -192,13 +196,61 @@
       showError('這個影片解碼失敗了，可能是格式問題（試試 mp4 / webm）');
     });
 
+    // ---- 播放 / 暫停 ----
+    function togglePlay() {
+      if (!video.src) return;
+      if (video.paused || video.ended) {
+        video.play().catch((err) => {
+          console.warn('[video] play() rejected', err);
+        });
+      } else {
+        video.pause();
+      }
+    }
+    if (btnPlayPause) {
+      btnPlayPause.addEventListener('click', (e) => { e.stopPropagation(); togglePlay(); });
+    }
+    // 點影片本身也可以切換
+    video.addEventListener('click', togglePlay);
+    // 影片狀態變化 → 同步 wrapper class（用 CSS 切換圖示）
+    video.addEventListener('play',  () => videoWrap && videoWrap.classList.add('playing'));
+    video.addEventListener('pause', () => videoWrap && videoWrap.classList.remove('playing'));
+    video.addEventListener('ended', () => videoWrap && videoWrap.classList.remove('playing'));
+
+    // ---- 播放時時間軸跟著動（除非使用者正在拖）----
+    video.addEventListener('timeupdate', () => {
+      if (isScrubbing) return;
+      if (!isFinite(video.duration)) return;
+      timeSlider.value = String(video.currentTime);
+      timeCurrent.textContent = formatTime(video.currentTime);
+    });
+
+    // ---- 時間軸：拖動 = 選封面（拖的時候自動暫停避免衝突）----
     timeSlider.addEventListener('input', () => {
+      isScrubbing = true;
+      if (!video.paused) video.pause();
       timeCurrent.textContent = formatTime(parseFloat(timeSlider.value));
     });
     let extractTimer = null;
     timeSlider.addEventListener('change', () => {
       if (extractTimer) clearTimeout(extractTimer);
-      extractTimer = setTimeout(() => extractFrameAt(parseFloat(timeSlider.value)), 50);
+      extractTimer = setTimeout(() => {
+        extractFrameAt(parseFloat(timeSlider.value)).finally(() => {
+          isScrubbing = false;
+        });
+      }, 50);
+    });
+    // 鍵盤拖也算 scrub 結束
+    timeSlider.addEventListener('blur',     () => { isScrubbing = false; });
+
+    // ---- 空白鍵快捷：播放/暫停（焦點在 body 時才生效，避免干擾輸入）----
+    document.addEventListener('keydown', (e) => {
+      if (e.code !== 'Space') return;
+      const t = e.target;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+      if (!video.src) return;
+      e.preventDefault();
+      togglePlay();
     });
 
     btnDownload.addEventListener('click', () => {
