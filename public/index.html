@@ -12,22 +12,22 @@
   <meta property="og:description" content="上傳 MV → 抓出封面 → 一鍵接續 15-30 秒分鏡。給老師、家長、學生免費使用。" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://cagoooo.github.io/music-cover-storyboard/" />
-  <meta property="og:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.5.0" />
+  <meta property="og:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.6.0" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="封面接故事 · 音樂影片分鏡產生器（紫粉漸層 + 影格與音符圖示）" />
   <meta property="og:locale" content="zh_TW" />
   <meta property="og:site_name" content="封面接故事" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.5.0" />
+  <meta name="twitter:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.6.0" />
 
   <!-- Favicons：SVG 給現代瀏覽器（最清晰）、ICO 給舊版 fallback、PNG 給 PWA / Android -->
-  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1.5.0" />
-  <link rel="icon" type="image/x-icon" href="favicon.ico?v=1.5.0" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=1.5.0" />
-  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=1.5.0" />
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1.5.0" />
-  <link rel="manifest" href="manifest.webmanifest?v=1.5.0" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1.6.0" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=1.6.0" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=1.6.0" />
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=1.6.0" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1.6.0" />
+  <link rel="manifest" href="manifest.webmanifest?v=1.6.0" />
 
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
@@ -61,7 +61,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="styles.css?v=1.5.0" />
+  <link rel="stylesheet" href="styles.css?v=1.6.0" />
 
   <!-- Cloudflare Turnstile -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
@@ -253,6 +253,53 @@
     <!-- Toast -->
     <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-3 bg-slate-900 text-white rounded-xl shadow-2xl text-sm font-medium"></div>
 
+    <!-- 分享 ShareSheet（共用 modal）-->
+    <div id="share-sheet" class="share-sheet hidden" role="dialog" aria-modal="true" aria-labelledby="share-sheet-title">
+      <div class="share-sheet-backdrop" data-share-close></div>
+      <div class="share-sheet-card">
+        <div class="share-sheet-header">
+          <h3 id="share-sheet-title">📤 分享</h3>
+          <button class="share-close" type="button" aria-label="關閉" data-share-close>×</button>
+        </div>
+        <div class="share-sheet-body">
+          <p class="share-sheet-label">預覽文字（可編輯）</p>
+          <textarea id="share-text" class="share-text" rows="4" maxlength="280"></textarea>
+          <p class="share-sheet-label" style="margin-top: 12px;">分享到：</p>
+          <div class="share-platforms">
+            <button class="share-platform" data-platform="webshare" type="button" hidden>
+              <span class="share-platform-icon">📱</span>
+              <span class="share-platform-label">原生分享</span>
+            </button>
+            <button class="share-platform" data-platform="x" type="button" title="Twitter / X">
+              <span class="share-platform-icon">𝕏</span>
+              <span class="share-platform-label">X</span>
+            </button>
+            <button class="share-platform" data-platform="facebook" type="button" title="Facebook">
+              <span class="share-platform-icon" style="color:#1877f2;">f</span>
+              <span class="share-platform-label">Facebook</span>
+            </button>
+            <button class="share-platform" data-platform="line" type="button" title="LINE">
+              <span class="share-platform-icon" style="color:#06c755;">L</span>
+              <span class="share-platform-label">LINE</span>
+            </button>
+            <button class="share-platform" data-platform="threads" type="button" title="Threads">
+              <span class="share-platform-icon">𝕋</span>
+              <span class="share-platform-label">Threads</span>
+            </button>
+            <button class="share-platform" data-platform="whatsapp" type="button" title="WhatsApp">
+              <span class="share-platform-icon" style="color:#25d366;">W</span>
+              <span class="share-platform-label">WhatsApp</span>
+            </button>
+            <button class="share-platform" data-platform="copy" type="button" title="複製連結">
+              <span class="share-platform-icon">🔗</span>
+              <span class="share-platform-label">複製連結</span>
+            </button>
+          </div>
+          <p class="share-sheet-hint">💡 Threads 不支援連結直接附上，會把網址帶進文字裡</p>
+        </div>
+      </div>
+    </div>
+
     <!-- 版本更新 Banner -->
     <div id="update-banner" class="hidden fixed bottom-6 right-6 z-50 max-w-sm bg-white rounded-2xl shadow-2xl border border-brand-200 p-4 animate-in fade-in slide-in-from-bottom-4">
       <div class="flex items-start gap-3">
@@ -324,10 +371,13 @@
   <!-- Footer -->
   <footer class="mt-12 border-t border-slate-200 bg-white/60">
     <div class="max-w-6xl mx-auto px-4 py-6 text-center text-sm text-slate-600 space-y-2">
-      <p>
+      <p class="flex flex-wrap items-center justify-center gap-2">
         <a href="teach.html" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-gradient-to-r from-brand-100 to-pink-100 text-brand-800 font-bold text-xs hover:from-brand-200 hover:to-pink-200 transition">
-          📚 給老師：教學駕駛艙（含教案 + 學習單 + 評量規準）
+          📚 給老師：教學駕駛艙
         </a>
+        <button type="button" onclick="window.__mcs_shareApp && window.__mcs_shareApp()" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-gradient-to-r from-cyan-100 to-blue-100 text-blue-800 font-bold text-xs hover:from-cyan-200 hover:to-blue-200 transition">
+          📤 分享工具給其他老師
+        </button>
       </p>
       <p>
         Made with ❤️ by
@@ -341,8 +391,8 @@
     </div>
   </footer>
 
-  <script src="config.js?v=1.5.0"></script>
-  <script src="app.js?v=1.5.0"></script>
+  <script src="config.js?v=1.6.0"></script>
+  <script src="app.js?v=1.6.0"></script>
 
   <!-- Service Worker 註冊 -->
   <script>

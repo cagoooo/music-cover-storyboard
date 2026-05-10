@@ -195,6 +195,182 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* ============================================================
+   ShareSheet — 一鍵分享到 X / FB / LINE / Threads / WhatsApp
+   ============================================================ */
+
+.share-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+}
+
+@media (min-width: 640px) {
+  .share-sheet { align-items: center; padding: 16px; }
+}
+
+.share-sheet.hidden { display: none; }
+
+.share-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: share-fade-in .15s ease;
+}
+
+.share-sheet-card {
+  position: relative;
+  background: white;
+  width: 100%;
+  max-width: 440px;
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -10px 40px rgba(0,0,0,.25);
+  animation: share-slide-up .25s cubic-bezier(.2, .8, .3, 1);
+}
+
+@media (min-width: 640px) {
+  .share-sheet-card { border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+}
+
+@keyframes share-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes share-slide-up {
+  from { transform: translateY(40px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+.share-sheet-header {
+  padding: 16px 20px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e2e8f0;
+}
+.share-sheet-header h3 {
+  font-size: 16px;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0;
+}
+.share-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  color: #64748b;
+  cursor: pointer;
+  transition: background .15s;
+}
+.share-close:hover { background: #f1f5f9; color: #1e293b; }
+
+.share-sheet-body {
+  padding: 16px 20px 20px;
+}
+
+.share-sheet-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: 6px;
+}
+
+.share-text {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  font-size: 13px;
+  font-family: inherit;
+  line-height: 1.55;
+  color: #1e293b;
+  resize: vertical;
+  transition: border-color .15s, box-shadow .15s;
+}
+.share-text:focus {
+  outline: none;
+  border-color: #a855f7;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, .15);
+}
+
+.share-platforms {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+@media (max-width: 380px) {
+  .share-platforms { grid-template-columns: repeat(3, 1fr); }
+}
+
+.share-platform {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 6px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all .15s;
+  min-height: 80px;
+}
+.share-platform:hover {
+  border-color: #a855f7;
+  background: #faf5ff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px -8px rgba(168, 85, 247, .35);
+}
+.share-platform.copied {
+  border-color: #10b981;
+  background: #ecfdf5;
+}
+
+.share-platform-icon {
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+  color: #1e293b;
+}
+.share-platform[data-platform="x"] .share-platform-icon { background: linear-gradient(135deg, #1e293b, #0f172a); color: white; }
+.share-platform[data-platform="facebook"] .share-platform-icon { background: #e7f3ff; }
+.share-platform[data-platform="line"] .share-platform-icon { background: #e6f9ec; }
+.share-platform[data-platform="threads"] .share-platform-icon { background: linear-gradient(135deg, #1e293b, #4c1d95); color: white; }
+.share-platform[data-platform="whatsapp"] .share-platform-icon { background: #e9fdf2; }
+.share-platform[data-platform="webshare"] .share-platform-icon { background: linear-gradient(135deg, #a855f7, #ec4899); color: white; }
+
+.share-platform-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.share-sheet-hint {
+  font-size: 10.5px;
+  color: #94a3b8;
+  margin-top: 12px;
+  line-height: 1.5;
+}
+
+/* ============================================================
    Streaming loading overlay — 打字機 echo
    ============================================================ */
 
@@ -616,8 +792,27 @@ input[type="range"]::-moz-range-thumb {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px -6px rgba(236, 72, 153, .35);
 }
+.btn-share-link {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+  border: 2px solid #bae6fd;
+  background: linear-gradient(135deg, #f0f9ff, #ecfeff);
+  color: #0369a1;
+}
+.btn-share-link:hover {
+  border-color: #0284c7;
+  background: linear-gradient(135deg, #ecfeff, #e0f2fe);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px -6px rgba(2, 132, 199, .35);
+}
 .btn-share-card:disabled,
-.btn-download-txt:disabled {
+.btn-download-txt:disabled,
+.btn-share-link:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;

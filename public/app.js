@@ -66,6 +66,7 @@
   initTurnstile();
   initVersionCheck();
   initAdvancedPrompt();
+  initShareSheet();
 
   // ====================================================================
   // 風格 chip
@@ -566,6 +567,10 @@
     resultsGrid.querySelectorAll('.btn-share-card').forEach(btn => {
       btn.addEventListener('click', () => generateShareCard(btn));
     });
+    // bind「分享」（連結 + 文字到社群）
+    resultsGrid.querySelectorAll('.btn-share-link').forEach(btn => {
+      btn.addEventListener('click', () => shareStoryboard(btn.closest('.result-card')));
+    });
   }
 
   function renderCard(item) {
@@ -638,8 +643,9 @@
           </details>
 
           <div class="card-footer-actions">
-            <button type="button" class="btn-download-txt">⬇️ 下載 .txt（全部段）</button>
-            <button type="button" class="btn-share-card">🖼️ 分享卡片圖</button>
+            <button type="button" class="btn-download-txt">⬇️ .txt</button>
+            <button type="button" class="btn-share-card">🖼️ 卡片圖</button>
+            <button type="button" class="btn-share-link">📤 分享</button>
           </div>
         </div>
       </article>
@@ -1011,6 +1017,123 @@
     try { seen = !!localStorage.getItem(SEEN_KEY); } catch (_) {}
     if (!seen) setTimeout(open, 600);
   }
+
+  // ====================================================================
+  // ShareSheet — 一鍵分享到 X / FB / LINE / Threads / WhatsApp
+  // ====================================================================
+  let shareCurrent = null;  // 當前分享資料 { title, text, url }
+
+  function initShareSheet() {
+    const sheet = document.getElementById('share-sheet');
+    if (!sheet) return;
+    const textArea = document.getElementById('share-text');
+
+    // 關閉
+    sheet.querySelectorAll('[data-share-close]').forEach((el) => {
+      el.addEventListener('click', closeShareSheet);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !sheet.classList.contains('hidden')) closeShareSheet();
+    });
+
+    // Web Share API 支援度偵測：支援就把那個按鈕顯示
+    const webshareBtn = sheet.querySelector('[data-platform="webshare"]');
+    if (webshareBtn && navigator.share) {
+      webshareBtn.hidden = false;
+    }
+
+    // 各平台 click
+    sheet.querySelectorAll('.share-platform').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const platform = btn.dataset.platform;
+        const text = textArea.value.trim();
+        const url = shareCurrent?.url || window.location.href;
+        const title = shareCurrent?.title || '封面接故事';
+        handlePlatformShare(platform, { title, text, url, btn });
+      });
+    });
+  }
+
+  function openShareSheet({ title, text, url }) {
+    const sheet = document.getElementById('share-sheet');
+    const textArea = document.getElementById('share-text');
+    if (!sheet || !textArea) return;
+    shareCurrent = { title, text, url };
+    textArea.value = text;
+    sheet.classList.remove('hidden');
+    setTimeout(() => textArea.focus(), 50);
+  }
+
+  function closeShareSheet() {
+    const sheet = document.getElementById('share-sheet');
+    if (sheet) sheet.classList.add('hidden');
+    shareCurrent = null;
+  }
+
+  async function handlePlatformShare(platform, { title, text, url, btn }) {
+    const enc = encodeURIComponent;
+    if (platform === 'webshare') {
+      try {
+        await navigator.share({ title, text, url });
+        closeShareSheet();
+      } catch (err) {
+        // 使用者取消不算錯
+        if (err.name !== 'AbortError') console.warn('[share] webshare failed', err);
+      }
+      return;
+    }
+    if (platform === 'copy') {
+      try {
+        await navigator.clipboard.writeText(`${text}\n\n${url}`);
+        const orig = btn.querySelector('.share-platform-label').textContent;
+        btn.classList.add('copied');
+        btn.querySelector('.share-platform-label').textContent = '✓ 已複製';
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.querySelector('.share-platform-label').textContent = orig;
+        }, 1800);
+      } catch (err) {
+        showToast('複製失敗，請手動選取', 3000);
+      }
+      return;
+    }
+
+    // 各平台 share intent URL
+    const urls = {
+      x:        `https://twitter.com/intent/tweet?text=${enc(text)}&url=${enc(url)}&hashtags=封面接故事,AI影片創作`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${enc(url)}&quote=${enc(text)}`,
+      line:     `https://social-plugins.line.me/lineit/share?url=${enc(url)}&text=${enc(text)}`,
+      threads:  `https://www.threads.net/intent/post?text=${enc(text + '\n\n' + url)}`,  // Threads 不接 url，塞進文字
+      whatsapp: `https://wa.me/?text=${enc(text + '\n' + url)}`,
+    };
+    const target = urls[platform];
+    if (!target) return;
+    const w = window.open(target, '_blank', 'noopener,noreferrer,width=600,height=600');
+    if (w) closeShareSheet();
+  }
+
+  // 主頁分享工具入口
+  function shareApp() {
+    openShareSheet({
+      title: '封面接故事 · 音樂影片分鏡產生器',
+      text: '🎬 把 AI 音樂影片接成完整故事！\n上傳 MV → 抓封面 → AI 自動產出 4-6 段獨立提示詞，貼回 Sora / Veo / Flow / Canva 一段一段產，最後串成一支完整短片！\n免費、不用登入。',
+      url: 'https://cagoooo.github.io/music-cover-storyboard/',
+    });
+  }
+
+  // 結果卡分享
+  function shareStoryboard(card) {
+    const styleName = card.querySelector('.result-card-header .flex-1')?.textContent.trim() || '分鏡';
+    const totalLabel = card.querySelector('.result-card-header span:last-child')?.textContent.trim() || '';
+    openShareSheet({
+      title: `${styleName} · 封面接故事`,
+      text: `✨ 我用「封面接故事」產了一個【${styleName}】風格分鏡（${totalLabel}）！\nAI 自動拆成獨立段提示詞，貼回 Google Flow / Canva AI / Sora / Veo 一段一段產出短片，超好用。`,
+      url: 'https://cagoooo.github.io/music-cover-storyboard/',
+    });
+  }
+
+  // 暴露給 inline handler 用
+  window.__mcs_shareApp = shareApp;
 
   // ====================================================================
   // 進階提示（A1 歌詞 + A2 角色描述）

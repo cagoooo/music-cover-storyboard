@@ -380,6 +380,11 @@
   <footer class="mt-12 border-t border-slate-200 bg-white/60">
     <div class="max-w-5xl mx-auto px-4 py-6 text-center text-sm text-slate-600 space-y-2">
       <p>
+        <button type="button" id="btn-share-teach" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-gradient-to-r from-cyan-100 to-blue-100 text-blue-800 font-bold text-xs hover:from-cyan-200 hover:to-blue-200 transition">
+          📤 分享這份教案給其他老師
+        </button>
+      </p>
+      <p>
         Made with ❤️ by
         <a href="https://www.smes.tyc.edu.tw/modules/tadnews/page.php?ncsn=11&nsn=16#a5" target="_blank" rel="noopener" class="font-bold text-brand-700 hover:text-brand-800 underline">阿凱老師</a>
         · 桃園市石門國小
@@ -393,6 +398,22 @@
 
   <script>
     document.getElementById('footer-year').textContent = new Date().getFullYear();
+
+    // 分享教學頁
+    document.getElementById('btn-share-teach').addEventListener('click', async () => {
+      const data = {
+        title: '給老師：封面接故事教學駕駛艙',
+        text: '📚 推薦給其他老師：「封面接故事」AI 影片創作教學引導 — 含 45 分鐘教案、學習單、評量規準，免費下載。',
+        url: 'https://cagoooo.github.io/music-cover-storyboard/teach.html',
+      };
+      if (navigator.share) {
+        try { await navigator.share(data); return; } catch (e) { if (e.name !== 'AbortError') console.warn(e); }
+      }
+      // 桌面 fallback：開 X / Twitter intent
+      const u = `https://twitter.com/intent/tweet?text=${encodeURIComponent(data.text)}&url=${encodeURIComponent(data.url)}&hashtags=封面接故事,教學駕駛艙,AI教育`;
+      window.open(u, '_blank', 'noopener,noreferrer,width=600,height=600');
+    });
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('service-worker.js').catch(() => {});
