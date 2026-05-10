@@ -390,7 +390,7 @@
     try {
       const res = await fetch(cfg.functionsUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
         body: JSON.stringify({
           data: {
             coverImageBase64: base64,
@@ -403,13 +403,27 @@
         }),
       });
 
-      const json = await res.json();
+      const ct = (res.headers.get('Content-Type') || '').toLowerCase();
 
-      if (!res.ok || json.error) {
-        const msg = (json.error && (json.error.message || json.error.status)) || `HTTP ${res.status}`;
-        throw new Error(msg);
+      // 先處理「請求驗證階段」就被拒（4xx + JSON），不是 SSE
+      if (!res.ok && !ct.includes('text/event-stream')) {
+        let errMsg = `HTTP ${res.status}`;
+        try {
+          const j = await res.json();
+          errMsg = (j.error && (j.error.message || j.error.status)) || errMsg;
+        } catch (_) {}
+        throw new Error(errMsg);
       }
-      payload = json.result;
+
+      // SSE streaming 路徑
+      if (ct.includes('text/event-stream') && res.body) {
+        payload = await consumeSSE(res);
+      } else {
+        // 萬一後端 fallback 回普通 JSON（向下相容）
+        const j = await res.json();
+        if (j.error) throw new Error((j.error.message || j.error.status));
+        payload = j.result;
+      }
     } catch (err) {
       hideLoading();
       resetTurnstile();
@@ -419,6 +433,103 @@
     hideLoading();
     resetTurnstile();
     renderResults(payload);
+  }
+
+  // ====================================================================
+  // SSE 解析：拿後端 streaming chunks 即時更新 loading UI
+  // ====================================================================
+  async function consumeSSE(response) {
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let buffer = '';
+    let receivedText = '';
+    let result = null;
+    let errorMsg = null;
+    const startTime = performance.now();
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        // SSE event 用 \n\n 分隔
+        let sepIdx;
+        while ((sepIdx = buffer.indexOf('\n\n')) !== -1) {
+          const rawEvent = buffer.slice(0, sepIdx);
+          buffer = buffer.slice(sepIdx + 2);
+          const dataLine = rawEvent.split('\n').find((l) => l.startsWith('data: '));
+          if (!dataLine) continue;
+          let payload;
+          try {
+            payload = JSON.parse(dataLine.slice(6));
+          } catch (_) {
+            continue;
+          }
+
+          if (payload.type === 'start') {
+            updateStreamingProgress({ phase: 'start', received: 0, elapsedMs: 0 });
+          } else if (payload.type === 'chunk') {
+            receivedText += payload.text || '';
+            updateStreamingProgress({
+              phase: 'streaming',
+              received: receivedText.length,
+              elapsedMs: performance.now() - startTime,
+              tail: receivedText.slice(-80),  // 最後 80 字給打字機 echo
+            });
+          } else if (payload.type === 'done') {
+            result = payload.result;
+            updateStreamingProgress({
+              phase: 'done',
+              received: receivedText.length,
+              elapsedMs: performance.now() - startTime,
+            });
+          } else if (payload.type === 'error') {
+            errorMsg = payload.message || 'AI 生成失敗';
+          }
+        }
+      }
+    } finally {
+      try { reader.releaseLock(); } catch (_) {}
+    }
+
+    if (errorMsg) throw new Error(errorMsg);
+    if (!result) throw new Error('AI 串流未完成（連線中斷）');
+    return result;
+  }
+
+  // 更新 loading overlay 的進度視覺
+  function updateStreamingProgress({ phase, received, elapsedMs, tail }) {
+    const elCount = document.getElementById('streaming-count');
+    const elPhase = document.getElementById('streaming-phase');
+    const elTail  = document.getElementById('streaming-tail');
+    const elBar   = document.getElementById('streaming-bar');
+    if (!elCount || !elPhase || !elTail || !elBar) return;
+
+    if (phase === 'start') {
+      elPhase.textContent = '🤖 已連上 Gemini，正在閱讀封面…';
+      elCount.textContent = '0 字';
+      elBar.style.width = '8%';
+      elTail.textContent = '';
+      return;
+    }
+    if (phase === 'streaming') {
+      const sec = (elapsedMs / 1000).toFixed(1);
+      elPhase.textContent = `✏️ AI 正在編寫分鏡（已耗 ${sec}s）`;
+      elCount.textContent = `${received.toLocaleString()} 字`;
+      // 假設 8 風格 × 4-6 段最終約 12000-18000 字，progress bar 動態估算
+      const expected = 12000;
+      const pct = Math.min(95, 8 + (received / expected) * 87);
+      elBar.style.width = pct.toFixed(0) + '%';
+      // 打字機 echo（tail 是最後幾十個字）
+      if (tail) elTail.textContent = tail;
+      return;
+    }
+    if (phase === 'done') {
+      const sec = (elapsedMs / 1000).toFixed(1);
+      elPhase.textContent = `✅ 完成！共 ${received.toLocaleString()} 字（${sec}s）`;
+      elBar.style.width = '100%';
+    }
   }
 
   function showLoading() { loading.classList.remove('hidden'); }

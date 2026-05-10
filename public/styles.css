@@ -195,6 +195,60 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* ============================================================
+   Streaming loading overlay — 打字機 echo
+   ============================================================ */
+
+.streaming-tail {
+  background: linear-gradient(180deg, #faf5ff 0%, #fdf2f8 100%);
+  border: 1px dashed #e9d5ff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  max-height: 5.4em;          /* 約 3 行字 */
+  overflow: hidden;
+  position: relative;
+  font-family: 'Courier New', 'Noto Sans Mono CJK TC', monospace;
+  font-size: 11.5px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* 上方淡入遮罩，營造「不斷往上捲」的感覺 */
+.streaming-tail::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1.2em;
+  background: linear-gradient(180deg, rgba(250, 245, 255, 1) 0%, rgba(250, 245, 255, 0) 100%);
+  pointer-events: none;
+}
+
+/* 末尾游標閃爍效果 */
+.streaming-tail::after {
+  content: '▊';
+  color: #a855f7;
+  animation: streaming-cursor 1s steps(2) infinite;
+  margin-left: 1px;
+}
+
+@keyframes streaming-cursor {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* 進度條動態漸層動畫 */
+#streaming-bar {
+  background-size: 200% 100%;
+  animation: streaming-bar-shift 2s ease-in-out infinite;
+}
+
+@keyframes streaming-bar-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* ============================================================
    進階提示（A1 歌詞 + A2 角色描述）
    ============================================================ */
 

@@ -165,8 +165,9 @@ function buildResponseSchema() {
   };
 }
 
-// ---- 共用：核心生成邏輯 ----
-async function runGeneration({ coverImageBase64, mimeType, selectedStyleIds, lyrics, characterDescription }) {
+// ---- 共用：核心生成邏輯（streaming 版本）----
+// onChunk: function(text, totalLength) — 每收到一段文字會被 call 一次（給 SSE handler 即時 forward）
+async function runGenerationStream({ coverImageBase64, mimeType, selectedStyleIds, lyrics, characterDescription }, onChunk) {
   // 過濾未知 style id
   const validIds = (selectedStyleIds || []).filter(id => Object.prototype.hasOwnProperty.call(STYLES, id));
   if (validIds.length === 0) {
@@ -195,7 +196,7 @@ async function runGeneration({ coverImageBase64, mimeType, selectedStyleIds, lyr
 
   const ai = buildGenAI();
 
-  const response = await ai.models.generateContent({
+  const stream = await ai.models.generateContentStream({
     model: MODEL_ID,
     contents: [
       {
@@ -211,7 +212,7 @@ async function runGeneration({ coverImageBase64, mimeType, selectedStyleIds, lyr
       responseSchema,
       temperature: 0.85,
       topP: 0.95,
-      maxOutputTokens: 32768, // 8 風格 × 4-6 段 × 中英文 prompt + 整體版，需要足夠 token
+      maxOutputTokens: 32768,
       thinkingConfig: { thinkingBudget: 0 },
       safetySettings: [
         { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
@@ -222,17 +223,26 @@ async function runGeneration({ coverImageBase64, mimeType, selectedStyleIds, lyr
     },
   });
 
-  const text = response.text || (response.response && response.response.text);
-  if (!text) {
-    console.error('[Gemini] empty response', JSON.stringify(response).slice(0, 500));
+  let fullText = '';
+  for await (const chunk of stream) {
+    const t = (chunk && chunk.text) || '';
+    if (!t) continue;
+    fullText += t;
+    if (typeof onChunk === 'function') {
+      try { onChunk(t, fullText.length); } catch (_) { /* don't break stream on UI error */ }
+    }
+  }
+
+  if (!fullText) {
+    console.error('[Gemini] empty response from stream');
     throw new HttpsError('internal', 'AI 回傳空白，請重試');
   }
 
   let parsed;
   try {
-    parsed = JSON.parse(text);
+    parsed = JSON.parse(fullText);
   } catch (err) {
-    console.error('[Gemini] JSON parse failed', text.slice(0, 800));
+    console.error('[Gemini] JSON parse failed', fullText.slice(0, 800));
     throw new HttpsError('internal', 'AI 回傳格式錯誤，請重試');
   }
 
@@ -298,29 +308,47 @@ exports.mcs_generateStoryboard = onRequest(
       return;
     }
 
-    // ---- 3. 呼叫 Gemini ----
+    // ---- 3. 切到 SSE streaming 模式 ----
+    // 從這裡開始，所有訊息（chunk / done / error）都用 SSE event 送
+    res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no'); // 防 reverse proxy buffering
+    if (typeof res.flushHeaders === 'function') res.flushHeaders();
+
+    const sendEvent = (type, payload) => {
+      try {
+        res.write(`data: ${JSON.stringify({ type, ...payload })}\n\n`);
+      } catch (e) {
+        // client disconnected — 忽略 write error，下個 chunk 會丟異常終止
+      }
+    };
+
+    // 開頭事件，讓前端立刻知道 stream 開始（很多 proxy 沒收到第一筆才會送 header）
+    sendEvent('start', { ts: Date.now() });
+
     try {
-      const result = await runGeneration({ coverImageBase64, mimeType, selectedStyleIds, lyrics, characterDescription });
-      res.json({ result });
+      const result = await runGenerationStream(
+        { coverImageBase64, mimeType, selectedStyleIds, lyrics, characterDescription },
+        (chunkText, totalLen) => {
+          sendEvent('chunk', { text: chunkText, total: totalLen });
+        }
+      );
+      sendEvent('done', { result });
+      res.end();
     } catch (err) {
+      let status = 'INTERNAL';
+      let message = (err && err.message) || 'AI 生成失敗';
       if (err instanceof HttpsError) {
         const code = err.code || 'internal';
-        const status = code === 'invalid-argument' ? 400
-          : code === 'permission-denied' ? 403
-          : code === 'resource-exhausted' ? 429
-          : 500;
-        res.status(status).json({ error: { status: code.toUpperCase().replace(/-/g, '_'), message: err.message } });
-        return;
+        status = code.toUpperCase().replace(/-/g, '_');
+      } else if (/quota|rate|exceeded|429/i.test(message)) {
+        status = 'RESOURCE_EXHAUSTED';
+        message = '今天 AI 太忙了，過幾分鐘再試';
       }
-      const msg = (err && err.message) || 'AI 生成失敗';
-      const isQuota = /quota|rate|exceeded|429/i.test(msg);
-      console.error('[generateStoryboard] failed', err);
-      res.status(isQuota ? 429 : 500).json({
-        error: {
-          status: isQuota ? 'RESOURCE_EXHAUSTED' : 'INTERNAL',
-          message: isQuota ? '今天 AI 太忙了，過幾分鐘再試' : msg,
-        },
-      });
+      console.error('[generateStoryboard] stream failed', err);
+      sendEvent('error', { status, message });
+      res.end();
     }
   }
 );

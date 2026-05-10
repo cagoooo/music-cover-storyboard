@@ -12,22 +12,22 @@
   <meta property="og:description" content="上傳 MV → 抓出封面 → 一鍵接續 15-30 秒分鏡。給老師、家長、學生免費使用。" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://cagoooo.github.io/music-cover-storyboard/" />
-  <meta property="og:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.4.0" />
+  <meta property="og:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.5.0" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="封面接故事 · 音樂影片分鏡產生器（紫粉漸層 + 影格與音符圖示）" />
   <meta property="og:locale" content="zh_TW" />
   <meta property="og:site_name" content="封面接故事" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.4.0" />
+  <meta name="twitter:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.5.0" />
 
   <!-- Favicons：SVG 給現代瀏覽器（最清晰）、ICO 給舊版 fallback、PNG 給 PWA / Android -->
-  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1.4.0" />
-  <link rel="icon" type="image/x-icon" href="favicon.ico?v=1.4.0" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=1.4.0" />
-  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=1.4.0" />
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1.4.0" />
-  <link rel="manifest" href="manifest.webmanifest?v=1.4.0" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1.5.0" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=1.5.0" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=1.5.0" />
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=1.5.0" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1.5.0" />
+  <link rel="manifest" href="manifest.webmanifest?v=1.5.0" />
 
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
@@ -61,7 +61,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="styles.css?v=1.4.0" />
+  <link rel="stylesheet" href="styles.css?v=1.5.0" />
 
   <!-- Cloudflare Turnstile -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
@@ -222,14 +222,30 @@
       <div id="results-grid" class="grid sm:grid-cols-2 gap-4"></div>
     </section>
 
-    <!-- Loading overlay -->
+    <!-- Loading overlay（streaming 即時進度）-->
     <div id="loading" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl p-6 sm:p-8 max-w-sm text-center space-y-4 shadow-2xl">
-        <div class="text-5xl animate-bounce">🎨</div>
-        <p class="font-bold text-slate-800">AI 正在看封面、編劇本…</p>
-        <p class="text-xs text-slate-500">通常 8-15 秒，請稍候</p>
-        <div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
-          <div class="h-full bg-gradient-to-r from-brand-500 to-pink-500 animate-pulse w-2/3"></div>
+      <div class="bg-white rounded-2xl p-6 sm:p-7 max-w-md w-full space-y-4 shadow-2xl">
+        <div class="text-center space-y-2">
+          <div class="text-5xl animate-bounce">🎨</div>
+          <p id="streaming-phase" class="font-bold text-slate-800 text-sm sm:text-base">🤖 連線中…</p>
+          <p class="text-xs text-slate-500">通常 15-30 秒，請稍候</p>
+        </div>
+
+        <!-- progress bar -->
+        <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+          <div id="streaming-bar" class="h-full bg-gradient-to-r from-brand-500 via-pink-500 to-amber-500 transition-all duration-300 ease-out" style="width: 0%"></div>
+        </div>
+
+        <!-- 字數 -->
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-slate-500">即時生成字數</span>
+          <span id="streaming-count" class="font-bold text-brand-700 text-base">0 字</span>
+        </div>
+
+        <!-- 打字機 echo（最後幾十個字） -->
+        <div class="border-t border-slate-200 pt-3">
+          <p class="text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">📺 AI 寫到這裡了：</p>
+          <div id="streaming-tail" class="streaming-tail text-xs text-slate-700 leading-relaxed font-mono break-words min-h-[3em]"></div>
         </div>
       </div>
     </div>
@@ -325,8 +341,8 @@
     </div>
   </footer>
 
-  <script src="config.js?v=1.4.0"></script>
-  <script src="app.js?v=1.4.0"></script>
+  <script src="config.js?v=1.5.0"></script>
+  <script src="app.js?v=1.5.0"></script>
 
   <!-- Service Worker 註冊 -->
   <script>
