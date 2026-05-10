@@ -12,22 +12,22 @@
   <meta property="og:description" content="上傳 MV → 抓出封面 → 一鍵接續 15-30 秒分鏡。給老師、家長、學生免費使用。" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://cagoooo.github.io/music-cover-storyboard/" />
-  <meta property="og:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.6.0" />
+  <meta property="og:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.7.0" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="封面接故事 · 音樂影片分鏡產生器（紫粉漸層 + 影格與音符圖示）" />
   <meta property="og:locale" content="zh_TW" />
   <meta property="og:site_name" content="封面接故事" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.6.0" />
+  <meta name="twitter:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.7.0" />
 
   <!-- Favicons：SVG 給現代瀏覽器（最清晰）、ICO 給舊版 fallback、PNG 給 PWA / Android -->
-  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1.6.0" />
-  <link rel="icon" type="image/x-icon" href="favicon.ico?v=1.6.0" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=1.6.0" />
-  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=1.6.0" />
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1.6.0" />
-  <link rel="manifest" href="manifest.webmanifest?v=1.6.0" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1.7.0" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=1.7.0" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=1.7.0" />
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=1.7.0" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1.7.0" />
+  <link rel="manifest" href="manifest.webmanifest?v=1.7.0" />
 
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
@@ -61,7 +61,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="styles.css?v=1.6.0" />
+  <link rel="stylesheet" href="styles.css?v=1.7.0" />
 
   <!-- Cloudflare Turnstile -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
@@ -253,6 +253,79 @@
     <!-- Toast -->
     <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-3 bg-slate-900 text-white rounded-xl shadow-2xl text-sm font-medium"></div>
 
+    <!-- PlatformLauncher：一鍵跳到 AI 影片平台 -->
+    <div id="platform-launcher" class="platform-launcher hidden" role="dialog" aria-modal="true" aria-labelledby="platform-launcher-title">
+      <div class="platform-launcher-backdrop" data-platform-close></div>
+      <div class="platform-launcher-card">
+        <div class="platform-launcher-header">
+          <h3 id="platform-launcher-title">🚀 跳到 AI 影片平台產這段</h3>
+          <button class="platform-launcher-close" type="button" aria-label="關閉" data-platform-close>×</button>
+        </div>
+        <div class="platform-launcher-body">
+          <p class="platform-launcher-hint">點選平台 → 提示詞會自動複製到剪貼簿，新分頁開啟後直接「貼上」即可產畫面</p>
+          <div class="platform-grid">
+            <a class="platform-card" data-platform-id="flow" data-platform-name="Google Flow" data-lang="en" href="https://labs.google/flow" target="_blank" rel="noopener">
+              <span class="platform-card-icon" style="background:linear-gradient(135deg,#4285f4,#1a73e8);color:white;">🎬</span>
+              <span class="platform-card-name">Google Flow</span>
+              <span class="platform-card-hint">Gemini Veo · 免費試用</span>
+              <span class="platform-card-lang">英文 prompt</span>
+            </a>
+            <a class="platform-card" data-platform-id="canva" data-platform-name="Canva AI" data-lang="zh" href="https://www.canva.com/ai-video-generator/" target="_blank" rel="noopener">
+              <span class="platform-card-icon" style="background:linear-gradient(135deg,#7d2ae8,#00c4cc);color:white;">🎨</span>
+              <span class="platform-card-name">Canva AI</span>
+              <span class="platform-card-hint">UI 友善 · 學校 Pro</span>
+              <span class="platform-card-lang">中文 / 英文皆可</span>
+            </a>
+            <a class="platform-card" data-platform-id="hailuo" data-platform-name="海螺影片" data-lang="zh" href="https://hailuoai.com/video" target="_blank" rel="noopener">
+              <span class="platform-card-icon" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);color:white;">🌊</span>
+              <span class="platform-card-name">海螺影片</span>
+              <span class="platform-card-hint">MiniMax · 免費試用</span>
+              <span class="platform-card-lang">中文 prompt 最適</span>
+            </a>
+            <a class="platform-card" data-platform-id="sora" data-platform-name="Sora" data-lang="en" href="https://sora.com/" target="_blank" rel="noopener">
+              <span class="platform-card-icon" style="background:linear-gradient(135deg,#0f172a,#000);color:white;">⚡</span>
+              <span class="platform-card-name">Sora</span>
+              <span class="platform-card-hint">OpenAI · 需 Plus</span>
+              <span class="platform-card-lang">英文 prompt</span>
+            </a>
+            <a class="platform-card" data-platform-id="runway" data-platform-name="Runway" data-lang="en" href="https://runwayml.com/" target="_blank" rel="noopener">
+              <span class="platform-card-icon" style="background:linear-gradient(135deg,#1e1b4b,#4338ca);color:white;">🎭</span>
+              <span class="platform-card-name">Runway</span>
+              <span class="platform-card-hint">Gen-3 · 試用</span>
+              <span class="platform-card-lang">英文 prompt</span>
+            </a>
+            <a class="platform-card" data-platform-id="kling" data-platform-name="可靈 Kling" data-lang="zh" href="https://klingai.com/" target="_blank" rel="noopener">
+              <span class="platform-card-icon" style="background:linear-gradient(135deg,#ec4899,#7c3aed);color:white;">🌪</span>
+              <span class="platform-card-name">可靈 Kling</span>
+              <span class="platform-card-hint">快手 · 免費試用</span>
+              <span class="platform-card-lang">中文 prompt 最適</span>
+            </a>
+            <a class="platform-card" data-platform-id="pika" data-platform-name="Pika" data-lang="en" href="https://pika.art/" target="_blank" rel="noopener">
+              <span class="platform-card-icon" style="background:linear-gradient(135deg,#f59e0b,#ea580c);color:white;">💫</span>
+              <span class="platform-card-name">Pika</span>
+              <span class="platform-card-hint">免費 · 友善 UI</span>
+              <span class="platform-card-lang">英文 prompt</span>
+            </a>
+            <a class="platform-card" data-platform-id="meta" data-platform-name="Meta AI" data-lang="en" href="https://www.meta.ai/" target="_blank" rel="noopener">
+              <span class="platform-card-icon" style="background:linear-gradient(135deg,#1877f2,#0866ff);color:white;">🅼</span>
+              <span class="platform-card-name">Meta AI</span>
+              <span class="platform-card-hint">Vibes · 免費</span>
+              <span class="platform-card-lang">英文 prompt</span>
+            </a>
+          </div>
+          <details class="platform-prompt-preview">
+            <summary>👁️ 查看待複製的 prompt</summary>
+            <div class="platform-prompt-body">
+              <p class="platform-prompt-label">中文版</p>
+              <div id="platform-preview-zh" class="prompt-block"></div>
+              <p class="platform-prompt-label" style="margin-top:8px;">英文版</p>
+              <div id="platform-preview-en" class="prompt-block"></div>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+
     <!-- 分享 ShareSheet（共用 modal）-->
     <div id="share-sheet" class="share-sheet hidden" role="dialog" aria-modal="true" aria-labelledby="share-sheet-title">
       <div class="share-sheet-backdrop" data-share-close></div>
@@ -354,7 +427,13 @@
           <li class="flex gap-3">
             <div class="w-8 h-8 shrink-0 rounded-full bg-cyan-100 text-cyan-700 font-black flex items-center justify-center">5</div>
             <div>
-              <strong class="text-slate-900">一段一段產 → 串成完整影片</strong> — 把第 1 段 prompt 貼到 <strong>Google Flow / Canva AI / Sora / Veo / Runway / 海螺</strong> 產出 5 秒影片，再貼第 2 段、第 3 段⋯⋯最後用任何剪輯軟體把所有段串接起來，就是一支 20-30 秒的精彩短片！
+              <strong class="text-slate-900">一鍵跳到平台產畫面</strong> — 每段下方有 <strong>「🚀 跳到 AI 平台產這段」</strong>紫粉按鈕，點下去自動：(1) 把該段 prompt 複製到剪貼簿；(2) 開新分頁到你選的平台（<strong>Google Flow / Canva AI / 海螺 / Sora / Runway / 可靈 / Pika / Meta AI</strong> 八選一）。在平台輸入框直接「貼上」就能產畫面，超快！
+            </div>
+          </li>
+          <li class="flex gap-3">
+            <div class="w-8 h-8 shrink-0 rounded-full bg-violet-100 text-violet-700 font-black flex items-center justify-center">6</div>
+            <div>
+              <strong class="text-slate-900">最後串接成完整影片</strong> — 一段一段產出 5 秒短片後，用<strong>剪映 / CapCut / Canva 影片編輯器</strong> 等任何剪輯軟體把所有段串接起來，就是一支 20-30 秒的精彩短片！
             </div>
           </li>
         </ol>
@@ -391,8 +470,8 @@
     </div>
   </footer>
 
-  <script src="config.js?v=1.6.0"></script>
-  <script src="app.js?v=1.6.0"></script>
+  <script src="config.js?v=1.7.0"></script>
+  <script src="app.js?v=1.7.0"></script>
 
   <!-- Service Worker 註冊 -->
   <script>

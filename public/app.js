@@ -67,6 +67,7 @@
   initVersionCheck();
   initAdvancedPrompt();
   initShareSheet();
+  initPlatformLauncher();
 
   // ====================================================================
   // 風格 chip
@@ -571,6 +572,36 @@
     resultsGrid.querySelectorAll('.btn-share-link').forEach(btn => {
       btn.addEventListener('click', () => shareStoryboard(btn.closest('.result-card')));
     });
+    // bind segment「跳到平台」
+    resultsGrid.querySelectorAll('[data-launch-seg]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const card = btn.closest('.result-card');
+        const idx = btn.dataset.launchSeg;
+        const styleName = card.querySelector('.result-card-header .flex-1')?.textContent.trim() || '';
+        const zh = card.querySelector(`[data-seg-zh="${idx}"]`)?.textContent || '';
+        const en = card.querySelector(`[data-seg-en="${idx}"]`)?.textContent || '';
+        const timeLabel = card.querySelector(`.segment-row[data-seg-index="${idx}"] .seg-time`)?.textContent || '';
+        openPlatformLauncher({
+          promptZh: zh,
+          promptEn: en,
+          contextLabel: `${styleName} · 第 ${idx} 段（${timeLabel}）`,
+        });
+      });
+    });
+    // bind「整體跳到平台」
+    resultsGrid.querySelectorAll('[data-launch-full]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const card = btn.closest('.result-card');
+        const styleName = card.querySelector('.result-card-header .flex-1')?.textContent.trim() || '';
+        const zh = card.querySelector('[data-full-zh]')?.textContent || '';
+        const en = card.querySelector('[data-full-en]')?.textContent || '';
+        openPlatformLauncher({
+          promptZh: zh,
+          promptEn: en,
+          contextLabel: `${styleName} · 整體版`,
+        });
+      });
+    });
   }
 
   function renderCard(item) {
@@ -606,6 +637,7 @@
             <button type="button" class="copy-btn copy-btn-mini" data-copy-target="[data-seg-zh='${seg.index}']">📋 複製中文</button>
             <button type="button" class="copy-btn copy-btn-mini" data-copy-target="[data-seg-en='${seg.index}']">📋 Copy EN</button>
           </div>
+          <button type="button" class="btn-launch-platform" data-launch-seg="${seg.index}">🚀 跳到 AI 平台產這段（${escapeHtml(seg.time || '')}）</button>
         </div>
       </div>
     `).join('');
@@ -639,6 +671,7 @@
                 <button type="button" class="copy-btn copy-btn-mini" data-copy-target="[data-full-zh]">📋 複製整體中文</button>
                 <button type="button" class="copy-btn copy-btn-mini" data-copy-target="[data-full-en]">📋 Copy Full EN</button>
               </div>
+              <button type="button" class="btn-launch-platform" data-launch-full>🚀 整體跳到 AI 平台（一次產整部）</button>
             </div>
           </details>
 
@@ -1016,6 +1049,96 @@
     let seen = false;
     try { seen = !!localStorage.getItem(SEEN_KEY); } catch (_) {}
     if (!seen) setTimeout(open, 600);
+  }
+
+  // ====================================================================
+  // PlatformLauncher — 一鍵跳到 AI 影片平台（自動複製 prompt）
+  // ====================================================================
+  let launchCurrent = null;  // { promptZh, promptEn, contextLabel }
+
+  function initPlatformLauncher() {
+    const sheet = document.getElementById('platform-launcher');
+    if (!sheet) return;
+
+    sheet.querySelectorAll('[data-platform-close]').forEach((el) => {
+      el.addEventListener('click', closePlatformLauncher);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !sheet.classList.contains('hidden')) closePlatformLauncher();
+    });
+
+    sheet.querySelectorAll('.platform-card').forEach((card) => {
+      card.addEventListener('click', async (e) => {
+        e.preventDefault();  // 阻止 a 標籤先跳
+        const platformId = card.dataset.platformId;
+        const platformName = card.dataset.platformName;
+        const lang = card.dataset.lang || 'zh';
+        const url = card.getAttribute('href');
+        await launchToPlatform(platformId, platformName, lang, url);
+      });
+    });
+  }
+
+  function openPlatformLauncher({ promptZh, promptEn, contextLabel }) {
+    const sheet = document.getElementById('platform-launcher');
+    if (!sheet) return;
+    launchCurrent = { promptZh: promptZh || '', promptEn: promptEn || '', contextLabel: contextLabel || '' };
+
+    // 更新標題
+    const title = document.getElementById('platform-launcher-title');
+    if (title) {
+      title.textContent = contextLabel
+        ? `🚀 跳到 AI 平台產「${contextLabel}」`
+        : '🚀 跳到 AI 影片平台';
+    }
+    // 更新預覽
+    const previewZh = document.getElementById('platform-preview-zh');
+    const previewEn = document.getElementById('platform-preview-en');
+    if (previewZh) previewZh.textContent = launchCurrent.promptZh || '（無）';
+    if (previewEn) previewEn.textContent = launchCurrent.promptEn || '（無）';
+
+    sheet.classList.remove('hidden');
+  }
+
+  function closePlatformLauncher() {
+    const sheet = document.getElementById('platform-launcher');
+    if (sheet) sheet.classList.add('hidden');
+  }
+
+  async function launchToPlatform(platformId, platformName, lang, url) {
+    if (!launchCurrent) return;
+    // 依平台語言屬性挑用哪個 prompt — 但中文 prompt 平台若英文也 OK 還是給中文
+    const text = lang === 'en'
+      ? (launchCurrent.promptEn || launchCurrent.promptZh)
+      : (launchCurrent.promptZh || launchCurrent.promptEn);
+
+    if (!text) {
+      showToast('❌ 找不到 prompt 內容', 3000);
+      return;
+    }
+
+    // 1. 複製到剪貼簿
+    let copied = false;
+    try {
+      await navigator.clipboard.writeText(text);
+      copied = true;
+    } catch (err) {
+      console.warn('[launcher] clipboard failed', err);
+    }
+
+    // 2. 開新分頁
+    const w = window.open(url, '_blank', 'noopener,noreferrer');
+
+    // 3. 關閉 launcher + toast 提示
+    closePlatformLauncher();
+    if (copied) {
+      showToast(`✅ 已複製 prompt（${lang === 'en' ? '英文' : '中文'}），請貼進 ${platformName} 輸入框`, 4500);
+    } else {
+      showToast(`⚠️ 無法自動複製，請手動複製：${platformName} 已開啟`, 4500);
+    }
+    if (!w) {
+      showToast(`⚠️ 瀏覽器擋了新分頁，請允許彈窗後重試`, 4000);
+    }
   }
 
   // ====================================================================
