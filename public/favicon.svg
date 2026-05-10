@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="封面接故事 favicon">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="55%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+  </defs>
+  <!-- 紫粉漸層圓角方塊 -->
+  <rect x="2" y="2" width="60" height="60" rx="14" ry="14" fill="url(#g)"/>
+  <!-- 上方音符（白色音符頭與符桿） -->
+  <ellipse cx="22" cy="22" rx="5.5" ry="4.2" fill="#ffffff" transform="rotate(-15 22 22)"/>
+  <rect x="26.5" y="11" width="2.4" height="13" fill="#ffffff" rx="0.6"/>
+  <!-- 中央播放三角形 -->
+  <polygon points="26,32 26,52 46,42" fill="#ffffff" />
+  <!-- 右下小圓點裝飾（影格 sprocket 暗示） -->
+  <circle cx="54" cy="14" r="2.4" fill="#ffffff" opacity="0.6"/>
+  <circle cx="14" cy="50" r="1.8" fill="#ffffff" opacity="0.5"/>
+</svg>
