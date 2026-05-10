@@ -49,7 +49,9 @@
   // ---- 狀態 ----
   let currentVideoUrl = null;
   let currentCoverDataUrl = null;
-  let selectedStyleIds = new Set(STYLES.map(s => s.id));
+  // 預設只選 1 個（寫實電影級）— 避免每班 30 位學生一次燒 8 倍 quota
+  // 想看更多種風格的使用者再自己勾起來，或按「全選」
+  let selectedStyleIds = new Set(['cinematic']);
   let turnstileWidgetId = null;
   let turnstileToken = null;
   let isScrubbing = false;     // 使用者正在拖時間軸（避免 timeupdate 衝突）
@@ -84,13 +86,15 @@
   // 風格 chip
   // ====================================================================
   function initStyleChips() {
-    styleGrid.innerHTML = STYLES.map(s => `
-      <div class="style-chip selected" data-style-id="${s.id}" role="checkbox" aria-checked="true" tabindex="0">
+    styleGrid.innerHTML = STYLES.map(s => {
+      const sel = selectedStyleIds.has(s.id);
+      return `
+      <div class="style-chip ${sel ? 'selected' : ''}" data-style-id="${s.id}" role="checkbox" aria-checked="${sel}" tabindex="0">
         <span class="style-chip-emoji">${s.emoji}</span>
         <span class="style-chip-label">${s.label}</span>
         <span class="text-[10px] text-slate-400">${s.sub}</span>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
 
     styleGrid.addEventListener('click', (e) => {
       const chip = e.target.closest('.style-chip');
