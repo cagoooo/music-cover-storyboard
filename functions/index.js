@@ -35,12 +35,29 @@ function buildGenAI() {
 }
 
 // ---- 共用：構造 system prompt ----
-function buildSystemPrompt(selectedStyles) {
+function buildSystemPrompt(selectedStyles, opts = {}) {
   const lines = selectedStyles.map((s, i) =>
     `${i + 1}. style_id="${s.id}" → ${s.label}\n   風格指引：${s.guideline}`
   );
 
-  return `你是一位專業的 AI 短影片導演與分鏡師。使用者剛用 AI 工具（Suno / Gemini Veo / Runway 等）做出一段音樂影片，並從中擷取了一張代表性的「封面那一幀」。
+  // 進階提示：歌詞/主題 + 主角外觀（兩者都是可選，使用者沒填就跳過）
+  const hasLyrics = opts.lyrics && opts.lyrics.trim().length > 0;
+  const hasCharacter = opts.characterDescription && opts.characterDescription.trim().length > 0;
+
+  let advancedSection = '';
+  if (hasLyrics || hasCharacter) {
+    advancedSection = `\n\n## 使用者提供的進階提示（必須吸收進每一段 prompt）\n\n`;
+    if (hasLyrics) {
+      advancedSection += `### 🎵 歌詞 / 主題（讓分鏡氛圍呼應這個情感）\n${opts.lyrics.trim()}\n\n`;
+      advancedSection += `→ 處理方式：把這個情感、意象、敘事走向融入每段的 mood / action / 視覺隱喻。但不要把歌詞**直接寫進 prompt**（AI 影片平台不需要看到歌詞文字本身），要轉化成畫面語言。\n\n`;
+    }
+    if (hasCharacter) {
+      advancedSection += `### 👤 主角外觀（每段 prompt_zh 與 prompt_en 都必須完整寫出這個外觀，讓 Veo / Sora 跨段保持角色一致）\n${opts.characterDescription.trim()}\n\n`;
+      advancedSection += `→ 處理方式：每一段 prompt 描述主體時，**完整重述這個外觀**（不要省略、不要用「同上」），這樣每個短影片片段才能跨段角色一致。\n\n`;
+    }
+  }
+
+  return `你是一位專業的 AI 短影片導演與分鏡師。使用者剛用 AI 工具（Suno / Gemini Veo / Runway 等）做出一段音樂影片，並從中擷取了一張代表性的「封面那一幀」。${advancedSection}
 
 你的任務：把這張封面當作**下一段 20-30 秒短影片的第 0 秒**，幫使用者編寫**接續這個畫面**的後續分鏡腳本。
 
@@ -149,7 +166,7 @@ function buildResponseSchema() {
 }
 
 // ---- 共用：核心生成邏輯 ----
-async function runGeneration({ coverImageBase64, mimeType, selectedStyleIds }) {
+async function runGeneration({ coverImageBase64, mimeType, selectedStyleIds, lyrics, characterDescription }) {
   // 過濾未知 style id
   const validIds = (selectedStyleIds || []).filter(id => Object.prototype.hasOwnProperty.call(STYLES, id));
   if (validIds.length === 0) {
@@ -165,8 +182,15 @@ async function runGeneration({ coverImageBase64, mimeType, selectedStyleIds }) {
     throw new HttpsError('invalid-argument', '封面圖片過大（請降低解析度後再試）');
   }
 
+  // 進階欄位安全限制（防超長攻擊）
+  const safeLyrics = typeof lyrics === 'string' ? lyrics.slice(0, 500) : '';
+  const safeCharacter = typeof characterDescription === 'string' ? characterDescription.slice(0, 300) : '';
+
   const selectedStyles = validIds.map(id => ({ id, ...STYLES[id] }));
-  const systemPrompt = buildSystemPrompt(selectedStyles);
+  const systemPrompt = buildSystemPrompt(selectedStyles, {
+    lyrics: safeLyrics,
+    characterDescription: safeCharacter,
+  });
   const responseSchema = buildResponseSchema();
 
   const ai = buildGenAI();
@@ -247,7 +271,7 @@ exports.mcs_generateStoryboard = onRequest(
     }
     const data = (body && body.data) || body || {};
 
-    const { coverImageBase64, mimeType, selectedStyleIds, turnstileToken } = data;
+    const { coverImageBase64, mimeType, selectedStyleIds, turnstileToken, lyrics, characterDescription } = data;
 
     // ---- 1. Turnstile 驗證 ----
     const remoteIp = (req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || '').toString().split(',')[0].trim();
@@ -276,7 +300,7 @@ exports.mcs_generateStoryboard = onRequest(
 
     // ---- 3. 呼叫 Gemini ----
     try {
-      const result = await runGeneration({ coverImageBase64, mimeType, selectedStyleIds });
+      const result = await runGeneration({ coverImageBase64, mimeType, selectedStyleIds, lyrics, characterDescription });
       res.json({ result });
     } catch (err) {
       if (err instanceof HttpsError) {

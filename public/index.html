@@ -12,22 +12,22 @@
   <meta property="og:description" content="上傳 MV → 抓出封面 → 一鍵接續 15-30 秒分鏡。給老師、家長、學生免費使用。" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://cagoooo.github.io/music-cover-storyboard/" />
-  <meta property="og:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.3.1" />
+  <meta property="og:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.4.0" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="封面接故事 · 音樂影片分鏡產生器（紫粉漸層 + 影格與音符圖示）" />
   <meta property="og:locale" content="zh_TW" />
   <meta property="og:site_name" content="封面接故事" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.3.1" />
+  <meta name="twitter:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.4.0" />
 
   <!-- Favicons：SVG 給現代瀏覽器（最清晰）、ICO 給舊版 fallback、PNG 給 PWA / Android -->
-  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1.3.1" />
-  <link rel="icon" type="image/x-icon" href="favicon.ico?v=1.3.1" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=1.3.1" />
-  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=1.3.1" />
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1.3.1" />
-  <link rel="manifest" href="manifest.webmanifest?v=1.3.1" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1.4.0" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=1.4.0" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=1.4.0" />
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=1.4.0" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1.4.0" />
+  <link rel="manifest" href="manifest.webmanifest?v=1.4.0" />
 
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
@@ -61,7 +61,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="styles.css?v=1.3.1" />
+  <link rel="stylesheet" href="styles.css?v=1.4.0" />
 
   <!-- Cloudflare Turnstile -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
@@ -179,6 +179,27 @@
           <div id="style-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
         </div>
 
+        <!-- 進階提示（A1 歌詞 + A2 角色描述）-->
+        <details class="advanced-prompt">
+          <summary>
+            <span class="advanced-summary-text">🎨 進階提示（可選，會讓分鏡更貼近你的構想）</span>
+            <span class="advanced-summary-toggle">▾</span>
+          </summary>
+          <div class="advanced-prompt-body">
+            <div class="advanced-field">
+              <label for="lyrics-input" class="advanced-label">🎵 歌詞 / 主題</label>
+              <textarea id="lyrics-input" rows="3" maxlength="500" placeholder="（可選）貼上這首歌的歌詞、或描述你想表達的主題。&#10;例：「畢業季的不捨與期待，希望未來能再相見」&#10;AI 會把這個情感融入分鏡氛圍與畫面選擇"></textarea>
+              <span class="char-count" data-target="lyrics-input">0 / 500</span>
+            </div>
+            <div class="advanced-field">
+              <label for="character-input" class="advanced-label">👤 主角描述（讓 Veo / Sora 跨段角色一致）</label>
+              <textarea id="character-input" rows="2" maxlength="300" placeholder="（可選）描述主角外觀，每段 prompt 都會帶這段描述。&#10;例：「一位戴黑框眼鏡的小學女生，綠色畢業學士服，黑色長髮綁雙馬尾，膚色白皙」"></textarea>
+              <span class="char-count" data-target="character-input">0 / 300</span>
+            </div>
+            <p class="advanced-hint">💡 兩個都填會更精準，但**完全不填也 OK**，AI 會自己根據封面圖判斷。</p>
+          </div>
+        </details>
+
         <div class="border-t pt-4 space-y-3">
           <div>
             <p class="text-sm font-bold text-slate-700 mb-2">人機驗證</p>
@@ -288,6 +309,11 @@
   <footer class="mt-12 border-t border-slate-200 bg-white/60">
     <div class="max-w-6xl mx-auto px-4 py-6 text-center text-sm text-slate-600 space-y-2">
       <p>
+        <a href="teach.html" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-gradient-to-r from-brand-100 to-pink-100 text-brand-800 font-bold text-xs hover:from-brand-200 hover:to-pink-200 transition">
+          📚 給老師：教學駕駛艙（含教案 + 學習單 + 評量規準）
+        </a>
+      </p>
+      <p>
         Made with ❤️ by
         <a href="https://www.smes.tyc.edu.tw/modules/tadnews/page.php?ncsn=11&nsn=16#a5" target="_blank" rel="noopener" class="font-bold text-brand-700 hover:text-brand-800 underline">阿凱老師</a>
         · 桃園市石門國小
@@ -299,8 +325,8 @@
     </div>
   </footer>
 
-  <script src="config.js?v=1.3.1"></script>
-  <script src="app.js?v=1.3.1"></script>
+  <script src="config.js?v=1.4.0"></script>
+  <script src="app.js?v=1.4.0"></script>
 
   <!-- Service Worker 註冊 -->
   <script>

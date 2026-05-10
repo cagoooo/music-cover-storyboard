@@ -65,6 +65,7 @@
   initFooterYear();
   initTurnstile();
   initVersionCheck();
+  initAdvancedPrompt();
 
   // ====================================================================
   // 風格 chip
@@ -383,6 +384,7 @@
     const base64 = currentCoverDataUrl.split(',')[1];
     const mimeType = 'image/png';
     const selectedIds = [...selectedStyleIds];
+    const { lyrics, character } = getAdvancedFields();
 
     let payload;
     try {
@@ -395,6 +397,8 @@
             mimeType,
             selectedStyleIds: selectedIds,
             turnstileToken,
+            lyrics: lyrics || undefined,
+            characterDescription: character || undefined,
           },
         }),
       });
@@ -446,6 +450,10 @@
     // bind「全部段一鍵下載 .txt」
     resultsGrid.querySelectorAll('.btn-download-txt').forEach(btn => {
       btn.addEventListener('click', () => downloadStyleTxt(btn));
+    });
+    // bind「分享卡片圖」
+    resultsGrid.querySelectorAll('.btn-share-card').forEach(btn => {
+      btn.addEventListener('click', () => generateShareCard(btn));
     });
   }
 
@@ -519,7 +527,8 @@
           </details>
 
           <div class="card-footer-actions">
-            <button type="button" class="btn-download-txt">⬇️ 下載這個風格全部段（.txt）</button>
+            <button type="button" class="btn-download-txt">⬇️ 下載 .txt（全部段）</button>
+            <button type="button" class="btn-share-card">🖼️ 分享卡片圖</button>
           </div>
         </div>
       </article>
@@ -592,6 +601,288 @@
   }
 
   // ====================================================================
+  // D1: 生成分鏡卡片圖（IG 限動 1080×1920，含封面 + 全部分段 + URL）
+  // ====================================================================
+  async function generateShareCard(btn) {
+    const card = btn.closest('.result-card');
+    const styleId = card.dataset.styleId;
+    const styleName = card.querySelector('.result-card-header .flex-1').textContent.trim();
+    const totalLabel = card.querySelector('.result-card-header span:last-child').textContent.trim();
+
+    btn.disabled = true;
+    const origText = btn.textContent;
+    btn.textContent = '🎨 繪製中…';
+
+    try {
+      // 等中文字型載入完成（避免 Canvas 用 fallback 字型畫圖）
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
+
+      const segments = [];
+      card.querySelectorAll('.segment-row').forEach((row) => {
+        segments.push({
+          index: row.dataset.segIndex,
+          time: row.querySelector('.seg-time').textContent,
+          shot: row.querySelector('.seg-shot').textContent,
+          duration: row.querySelector('.seg-duration').textContent,
+          action: row.querySelector('.seg-line-2').textContent,
+          mood: row.querySelector('.seg-line-3').textContent.replace(/^氛圍：/, ''),
+        });
+      });
+
+      const W = 1080;
+      const H = 1920;
+      const canvas = document.createElement('canvas');
+      canvas.width = W;
+      canvas.height = H;
+      const ctx = canvas.getContext('2d');
+
+      // === 1. 紫粉漸層背景 ===
+      const bg = ctx.createLinearGradient(0, 0, W, H);
+      bg.addColorStop(0,   '#a855f7');
+      bg.addColorStop(0.5, '#7c3aed');
+      bg.addColorStop(1,   '#ec4899');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, W, H);
+
+      // 柔光圈裝飾
+      const glow1 = ctx.createRadialGradient(W * 0.15, H * 0.1, 30, W * 0.15, H * 0.1, 600);
+      glow1.addColorStop(0, 'rgba(255, 255, 255, 0.18)');
+      glow1.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.fillStyle = glow1;
+      ctx.fillRect(0, 0, W, H);
+
+      // === 2. 頂部標題 ===
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
+      roundedRect(ctx, 60, 60, W - 120, 100, 30);
+      ctx.fill();
+
+      ctx.fillStyle = 'white';
+      ctx.font = '900 52px "Noto Sans TC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('封面接故事', W / 2, 95);
+      ctx.font = '700 28px "Noto Sans TC", sans-serif';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.fillText('AI 音樂影片分鏡產生器', W / 2, 138);
+
+      // === 3. 封面圖（如果有的話）===
+      let topY = 200;
+      if (currentCoverDataUrl) {
+        const coverImg = await loadImage(currentCoverDataUrl);
+        const coverW = W - 160;
+        const coverH = (coverImg.height / coverImg.width) * coverW;
+        const maxCoverH = 480;
+        const finalH = Math.min(coverH, maxCoverH);
+        const finalW = coverImg.width / coverImg.height * finalH;
+        const cx = (W - finalW) / 2;
+
+        // 白框
+        ctx.fillStyle = 'white';
+        roundedRect(ctx, cx - 8, topY - 8, finalW + 16, finalH + 16, 20);
+        ctx.fill();
+
+        ctx.save();
+        roundedRect(ctx, cx, topY, finalW, finalH, 14);
+        ctx.clip();
+        ctx.drawImage(coverImg, cx, topY, finalW, finalH);
+        ctx.restore();
+
+        topY += finalH + 50;
+      }
+
+      // === 4. 風格標題卡 ===
+      const themeColors = {
+        cinematic:    ['#1e293b', '#475569'],
+        suno_mv:      ['#be185d', '#f472b6'],
+        storyboard_kid: ['#f59e0b', '#fbbf24'],
+        anime_jp:     ['#db2777', '#f9a8d4'],
+        cyberpunk:    ['#6d28d9', '#06b6d4'],
+        ghibli:       ['#16a34a', '#fde68a'],
+        documentary:  ['#57534e', '#a8a29e'],
+        kpop_mv:      ['#ec4899', '#f97316'],
+      };
+      const [c1, c2] = themeColors[styleId] || ['#7c3aed', '#ec4899'];
+      const themeGrad = ctx.createLinearGradient(60, topY, W - 60, topY + 90);
+      themeGrad.addColorStop(0, c1);
+      themeGrad.addColorStop(1, c2);
+      ctx.fillStyle = themeGrad;
+      roundedRect(ctx, 60, topY, W - 120, 90, 18);
+      ctx.fill();
+
+      ctx.fillStyle = 'white';
+      ctx.font = '900 44px "Noto Sans TC", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(styleName, 90, topY + 45);
+      ctx.font = '700 26px "Noto Sans TC", sans-serif';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.textAlign = 'right';
+      ctx.fillText(totalLabel, W - 90, topY + 45);
+
+      topY += 120;
+
+      // === 5. 分段列表 ===
+      const segCardW = W - 120;
+      const segCardX = 60;
+      const segMinH = 130;
+      const remainingH = H - topY - 200;  // 預留底部 200 給 footer
+      const idealSegH = Math.min(segMinH + 40, remainingH / Math.max(segments.length, 1));
+      const segH = Math.max(segMinH, idealSegH);
+
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+
+      segments.slice(0, 7).forEach((seg, i) => {
+        const y = topY + i * (segH + 12);
+
+        // 段背景
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+        roundedRect(ctx, segCardX, y, segCardW, segH, 16);
+        ctx.fill();
+
+        // 段編號圓圈
+        const badgeX = segCardX + 60;
+        const badgeY = y + segH / 2;
+        const badgeGrad = ctx.createLinearGradient(badgeX - 30, badgeY - 30, badgeX + 30, badgeY + 30);
+        badgeGrad.addColorStop(0, '#a855f7');
+        badgeGrad.addColorStop(1, '#ec4899');
+        ctx.fillStyle = badgeGrad;
+        ctx.beginPath();
+        ctx.arc(badgeX, badgeY, 32, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'white';
+        ctx.font = '900 36px "Noto Sans TC", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(seg.index, badgeX, badgeY + 2);
+
+        // 段內容（時間 + shot）
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillStyle = '#7c3aed';
+        ctx.font = '900 28px "Noto Sans TC", sans-serif';
+        ctx.fillText(seg.time, badgeX + 60, y + 24);
+        ctx.fillStyle = '#1e293b';
+        ctx.font = '700 28px "Noto Sans TC", sans-serif';
+        ctx.fillText('· ' + seg.shot, badgeX + 60 + ctx.measureText(seg.time).width + 12, y + 24);
+        // 右上角 duration 膠囊
+        ctx.fillStyle = '#94a3b8';
+        roundedRect(ctx, segCardX + segCardW - 100, y + 22, 80, 32, 16);
+        ctx.fill();
+        ctx.fillStyle = 'white';
+        ctx.font = '700 20px "Noto Sans TC", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(seg.duration, segCardX + segCardW - 60, y + 32);
+
+        // 動作描述（換行）
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#475569';
+        ctx.font = '500 22px "Noto Sans TC", sans-serif';
+        wrapText(ctx, seg.action, badgeX + 60, y + 62, segCardW - 200, 30, 2);
+
+        // 氛圍
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '500 18px "Noto Sans TC", sans-serif';
+        ctx.fillText('氛圍：' + seg.mood.slice(0, 20), badgeX + 60, y + segH - 32);
+      });
+
+      if (segments.length > 7) {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.font = '700 24px "Noto Sans TC", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`還有 ${segments.length - 7} 段...完整版請看網站`, W / 2, topY + 7 * (segH + 12) + 10);
+      }
+
+      // === 6. 底部署名 + URL ===
+      const footerY = H - 120;
+      // 半透明黑底
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+      ctx.fillRect(0, footerY, W, 120);
+
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = 'white';
+      ctx.font = '700 28px "Noto Sans TC", sans-serif';
+      ctx.fillText('🎬 cagoooo.github.io/music-cover-storyboard', 60, footerY + 50);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+      ctx.font = '500 22px "Noto Sans TC", sans-serif';
+      ctx.fillText('Made with ❤️ by 阿凱老師 · 桃園市石門國小', 60, footerY + 88);
+
+      // === 7. 下載 ===
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png', 0.95));
+      const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `storyboard-${styleId}-${ts}.png`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+
+      showToast('✅ 分鏡卡片圖已下載（IG 限動尺寸 1080×1920）');
+    } catch (err) {
+      console.error('[shareCard] failed', err);
+      showToast('❌ 卡片圖生成失敗：' + (err.message || '未知錯誤'), 4000);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = origText;
+    }
+  }
+
+  function roundedRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 99) {
+    if (!text) return;
+    const chars = text.split('');
+    let line = '';
+    let lineCount = 0;
+    for (let i = 0; i < chars.length; i++) {
+      const testLine = line + chars[i];
+      const w = ctx.measureText(testLine).width;
+      if (w > maxWidth && line.length > 0) {
+        ctx.fillText(line, x, y + lineCount * lineHeight);
+        line = chars[i];
+        lineCount++;
+        if (lineCount >= maxLines - 1) {
+          // 最後一行，加省略號
+          let last = line;
+          while (ctx.measureText(last + '…').width > maxWidth && last.length > 0) {
+            last = last.slice(0, -1);
+          }
+          for (let j = i + 1; j < chars.length; j++) {
+            const c = last + chars[j];
+            if (ctx.measureText(c + '…').width > maxWidth) break;
+            last = c;
+          }
+          if (i + 1 < chars.length) last += '…';
+          ctx.fillText(last, x, y + lineCount * lineHeight);
+          return;
+        }
+      } else {
+        line = testLine;
+      }
+    }
+    if (line) ctx.fillText(line, x, y + lineCount * lineHeight);
+  }
+
+  function loadImage(src) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = src;
+    });
+  }
+
+  // ====================================================================
   // 使用說明 modal
   // ====================================================================
   function initHelpModal() {
@@ -608,6 +899,31 @@
     let seen = false;
     try { seen = !!localStorage.getItem(SEEN_KEY); } catch (_) {}
     if (!seen) setTimeout(open, 600);
+  }
+
+  // ====================================================================
+  // 進階提示（A1 歌詞 + A2 角色描述）
+  // ====================================================================
+  function initAdvancedPrompt() {
+    document.querySelectorAll('.char-count').forEach((el) => {
+      const targetId = el.dataset.target;
+      const input = document.getElementById(targetId);
+      if (!input) return;
+      const max = parseInt(input.getAttribute('maxlength') || '500', 10);
+      const update = () => {
+        const len = input.value.length;
+        el.textContent = `${len} / ${max}`;
+        el.classList.toggle('near-limit', len > max * 0.9);
+      };
+      input.addEventListener('input', update);
+      update();
+    });
+  }
+
+  function getAdvancedFields() {
+    const lyrics = (document.getElementById('lyrics-input')?.value || '').trim();
+    const character = (document.getElementById('character-input')?.value || '').trim();
+    return { lyrics, character };
   }
 
   // ====================================================================

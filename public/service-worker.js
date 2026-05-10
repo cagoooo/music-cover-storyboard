@@ -10,13 +10,14 @@
  *   activate 時把舊版 cache 全部刪掉，立刻接管所有頁面。
  */
 
-const CACHE_VERSION = '1.3.1';
+const CACHE_VERSION = '1.4.0';
 const STATIC_CACHE = `mcs-static-v${CACHE_VERSION}`;
 const HTML_CACHE   = `mcs-html-v${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
   './',
   './index.html',
+  './teach.html',
   './app.js?v=' + CACHE_VERSION,
   './styles.css?v=' + CACHE_VERSION,
   './config.js?v=' + CACHE_VERSION,

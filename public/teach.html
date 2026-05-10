@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#7c3aed" />
+  <title>給老師：教學駕駛艙 · 封面接故事</title>
+  <meta name="description" content="封面接故事 · 音樂影片分鏡產生器 — 給國小資訊科技老師的完整教學引導：學習目標、課堂流程、學生工作單、評量規準、延伸資源。" />
+
+  <meta property="og:title" content="給老師：教學駕駛艙 · 封面接故事" />
+  <meta property="og:description" content="把 AI 影片創作帶進課堂的完整教案 — 45 分鐘流程 + 學生工作單 + 評量規準。" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://cagoooo.github.io/music-cover-storyboard/teach.html" />
+  <meta property="og:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.3.1" />
+  <meta property="og:locale" content="zh_TW" />
+
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1.3.1" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=1.3.1" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1.3.1" />
+  <link rel="manifest" href="manifest.webmanifest?v=1.3.1" />
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['"Noto Sans TC"', 'system-ui', 'sans-serif'] },
+          colors: { brand: { 50:'#faf5ff',100:'#f3e8ff',200:'#e9d5ff',300:'#d8b4fe',400:'#c084fc',500:'#a855f7',600:'#9333ea',700:'#7c3aed',800:'#6b21a8',900:'#581c87' } },
+        },
+      },
+    };
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css?v=1.3.1" />
+
+  <style>
+    /* 教學頁專屬樣式 */
+    .teach-section { background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.04); border: 1px solid #e2e8f0; overflow: hidden; }
+    .teach-section-header { padding: 14px 20px; color: white; font-weight: 800; display: flex; align-items: center; gap: 12px; }
+    .teach-section-body { padding: 20px; }
+    .pirls-card { border-left: 4px solid; padding: 12px 14px; border-radius: 8px; margin-bottom: 10px; }
+    .pirls-提取 { background: #fef3c7; border-color: #f59e0b; } /* 橘 */
+    .pirls-推論 { background: #ecfccb; border-color: #65a30d; } /* 綠 */
+    .pirls-詮釋 { background: #ddd6fe; border-color: #7c3aed; } /* 紫 */
+    .pirls-評估 { background: #fce7f3; border-color: #db2777; } /* 粉 */
+    .step-row { display: grid; grid-template-columns: 60px 80px 1fr; gap: 10px; padding: 10px 12px; background: #f8fafc; border-radius: 10px; margin-bottom: 8px; align-items: start; }
+    .step-row .step-time { font-weight: 800; color: #7c3aed; font-size: 13px; }
+    .step-row .step-actor { font-size: 11px; color: #64748b; background: #e2e8f0; padding: 2px 8px; border-radius: 6px; align-self: start; }
+    .step-row .step-content { font-size: 13px; line-height: 1.65; color: #334155; }
+    .rubric-row { display: grid; grid-template-columns: 1fr 80px 80px 80px; gap: 8px; padding: 8px 10px; border-bottom: 1px solid #e2e8f0; align-items: center; font-size: 12.5px; }
+    .rubric-row.head { background: #f1f5f9; font-weight: 800; color: #1e293b; border-radius: 8px 8px 0 0; padding: 10px; }
+    .rubric-cell { text-align: center; font-weight: 700; }
+    .rubric-cell.lv-3 { color: #059669; }
+    .rubric-cell.lv-2 { color: #d97706; }
+    .rubric-cell.lv-1 { color: #94a3b8; }
+    .resource-card { padding: 12px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; transition: all .15s; display: block; text-decoration: none; }
+    .resource-card:hover { background: #faf5ff; border-color: #c084fc; transform: translateY(-1px); }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-brand-50 via-white to-pink-50 min-h-screen text-slate-800 font-sans antialiased">
+
+  <!-- Header -->
+  <header class="border-b border-brand-100 bg-white/80 backdrop-blur sticky top-0 z-30">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+      <a href="index.html" class="flex items-center gap-3 min-w-0 hover:opacity-80 transition">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-pink-400 flex items-center justify-center shadow-lg shrink-0">
+          <span class="text-2xl">🎬</span>
+        </div>
+        <div class="min-w-0">
+          <h1 class="text-base sm:text-lg font-black text-brand-800 truncate">封面接故事</h1>
+          <p class="text-[10px] sm:text-xs text-slate-500 truncate">教學駕駛艙</p>
+        </div>
+      </a>
+      <a href="index.html" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-lg border-2 border-brand-300 text-brand-700 bg-white hover:bg-brand-50 transition">
+        <span>🏠</span><span class="hidden sm:inline">回主頁</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 py-6 sm:py-10 space-y-5">
+
+    <!-- Hero -->
+    <section class="text-center space-y-3 py-3">
+      <div class="inline-block px-4 py-1.5 rounded-full bg-gradient-to-r from-brand-500 to-pink-500 text-white text-xs font-bold tracking-wider">給國小資訊科技老師</div>
+      <h2 class="text-2xl sm:text-4xl font-black text-slate-900 leading-tight">
+        把 AI 創作帶進課堂的<br /><span class="text-brand-600">完整教學引導</span>
+      </h2>
+      <p class="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto">
+        45 分鐘把學生從「使用者」變「導演」 — 學習目標、課堂流程、學生工作單、評量規準，全部在一頁內。
+      </p>
+    </section>
+
+    <!-- 1. 學習目標 -->
+    <section class="teach-section">
+      <div class="teach-section-header bg-gradient-to-r from-brand-600 to-pink-500">
+        <span class="text-2xl">🎯</span>
+        <span>1. 學習目標 · 適用對象</span>
+      </div>
+      <div class="teach-section-body space-y-4">
+        <div>
+          <h3 class="font-bold text-slate-800 mb-2">適用對象與規格</h3>
+          <ul class="text-sm text-slate-700 space-y-1 list-disc pl-5">
+            <li><strong>適用年級</strong>：國小高年級（5-6 年級）／ 國中（7-9 年級）／ 高中（依授課內容調整）</li>
+            <li><strong>建議節數</strong>：1 節 45 分鐘（單堂）／ 2 節 90 分鐘（深度版含創作展示）</li>
+            <li><strong>授課科目</strong>：資訊科技、生活科技、藝術與人文、綜合活動</li>
+            <li><strong>需要設備</strong>：每位學生 1 台電腦／平板（含瀏覽器）、投影設備、音響</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="font-bold text-slate-800 mb-2">三層次學習目標</h3>
+          <div class="space-y-2">
+            <div class="pirls-card pirls-提取">
+              <strong>📚 知識層</strong>：認識 AI 影片生成工具的基本工作原理（提示詞→畫面），了解「分鏡」這個影像敘事的核心概念。
+            </div>
+            <div class="pirls-card pirls-推論">
+              <strong>🛠️ 技能層</strong>：能用文字描述視覺畫面（運鏡、氛圍、色調），能把長故事拆成 4-6 個 5 秒短片，能評估 AI 產出與自己構想的差距。
+            </div>
+            <div class="pirls-card pirls-詮釋">
+              <strong>💭 素養層</strong>：理解 AI 是「創作夥伴」而非「替代者」 — 人決定故事與情感、AI 幫忙產畫面，學會與 AI 協作的工作節奏。
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. 課堂流程 -->
+    <section class="teach-section">
+      <div class="teach-section-header bg-gradient-to-r from-pink-500 to-amber-500">
+        <span class="text-2xl">⏱️</span>
+        <span>2. 45 分鐘課堂流程</span>
+      </div>
+      <div class="teach-section-body space-y-3">
+        <p class="text-sm text-slate-600 mb-3">建議流程，可依班級狀況調整。<strong>標 ⭐ 為必做環節</strong>。</p>
+
+        <div class="step-row">
+          <span class="step-time">0-5'</span>
+          <span class="step-actor">⭐ 老師</span>
+          <span class="step-content"><strong>引起動機</strong>：放一段 Suno 或 Gemini Veo 產出的學生作品（30 秒）→ 提問「這是真人拍的嗎？」「畫面怎麼來的？」引出「AI 影片創作」主題。</span>
+        </div>
+
+        <div class="step-row">
+          <span class="step-time">5-12'</span>
+          <span class="step-actor">⭐ 老師</span>
+          <span class="step-content"><strong>觀念講解</strong>：示範什麼是「分鏡」（用一首大家熟悉的 MV 為例，逐個鏡頭解釋運鏡語言：推軌、特寫、慢動作）。介紹工具：「<a href="index.html" class="text-brand-600 underline font-bold">封面接故事</a>」可以幫我們把一張封面圖延伸成完整分鏡。</span>
+        </div>
+
+        <div class="step-row">
+          <span class="step-time">12-15'</span>
+          <span class="step-actor">老師</span>
+          <span class="step-content"><strong>工具示範</strong>：投影示範流程 — 上傳影片 → 抓封面 → 選風格 → 看 AI 產的分鏡。重點講解「分段提示詞」的概念（每段 5 秒、貼回 Flow / Canva AI 產出）。</span>
+        </div>
+
+        <div class="step-row">
+          <span class="step-time">15-30'</span>
+          <span class="step-actor">⭐ 學生</span>
+          <span class="step-content"><strong>動手實作</strong>：學生用提供的範例影片（或自己之前用 Suno 做的歌）操作工具，產出至少 1 個風格的分鏡。<strong>必做</strong>：填寫進階提示中的「主角描述」欄位（鼓勵跨段角色一致）。</span>
+        </div>
+
+        <div class="step-row">
+          <span class="step-time">30-40'</span>
+          <span class="step-actor">學生</span>
+          <span class="step-content"><strong>產出與微調</strong>：把 AI 產的分段 prompt 貼到 Google Flow 或 Canva AI 試產第 1-2 段短片，看看效果是不是符合預期，討論「為什麼 AI 沒產出我預期的畫面？」（提示詞還能怎麼調？）</span>
+        </div>
+
+        <div class="step-row">
+          <span class="step-time">40-45'</span>
+          <span class="step-actor">⭐ 全班</span>
+          <span class="step-content"><strong>分享與反思</strong>：邀請 2-3 位學生分享產出，全班討論：「AI 是創作助手還是創作主角？」「如果我們把這支影片用在學校活動上，誰是作者？」</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 學生工作單 -->
+    <section class="teach-section">
+      <div class="teach-section-header bg-gradient-to-r from-amber-500 to-emerald-500">
+        <span class="text-2xl">📝</span>
+        <span>3. 學生工作單（可印發）</span>
+      </div>
+      <div class="teach-section-body space-y-4">
+        <p class="text-sm text-slate-600">建議印一張 A4 雙面，學生邊操作邊填。完整版可整段拷貝下來印發：</p>
+
+        <div class="bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl p-4 sm:p-6 space-y-4 text-sm leading-relaxed">
+          <h3 class="font-black text-lg text-slate-800 text-center">「封面接故事」學習單</h3>
+          <p class="text-center text-xs text-slate-500">姓名：______________ 班級：________ 日期：________</p>
+
+          <div class="space-y-3">
+            <div>
+              <strong class="text-brand-700">① 我選的影片主題（30 字內）：</strong>
+              <div class="border-b border-slate-300 h-6 mt-1"></div>
+            </div>
+
+            <div>
+              <strong class="text-brand-700">② 我要描述的主角外觀（給 AI 看）：</strong>
+              <div class="border-b border-slate-300 h-6 mt-1"></div>
+              <div class="border-b border-slate-300 h-6 mt-1"></div>
+            </div>
+
+            <div>
+              <strong class="text-brand-700">③ 我選的分鏡風格（請打勾）：</strong>
+              <div class="grid grid-cols-2 gap-1 text-xs mt-2">
+                <label class="flex items-center gap-1"><input type="checkbox" class="form-checkbox" />🎬 寫實電影級</label>
+                <label class="flex items-center gap-1"><input type="checkbox" class="form-checkbox" />🎵 Suno MV 抒情</label>
+                <label class="flex items-center gap-1"><input type="checkbox" class="form-checkbox" />🎨 童趣動畫</label>
+                <label class="flex items-center gap-1"><input type="checkbox" class="form-checkbox" />🇯🇵 日系動漫</label>
+                <label class="flex items-center gap-1"><input type="checkbox" class="form-checkbox" />🌃 賽博龐克</label>
+                <label class="flex items-center gap-1"><input type="checkbox" class="form-checkbox" />🌸 Ghibli 溫馨</label>
+                <label class="flex items-center gap-1"><input type="checkbox" class="form-checkbox" />📽️ 紀錄片寫實</label>
+                <label class="flex items-center gap-1"><input type="checkbox" class="form-checkbox" />⚡ K-pop 高能</label>
+              </div>
+            </div>
+
+            <div>
+              <strong class="text-brand-700">④ AI 產出後，我覺得最好的一段是第 ___ 段，原因：</strong>
+              <div class="border-b border-slate-300 h-6 mt-1"></div>
+              <div class="border-b border-slate-300 h-6 mt-1"></div>
+            </div>
+
+            <div>
+              <strong class="text-brand-700">⑤ 如果我想把這段 prompt 改得更接近我的構想，我會加入：</strong>
+              <div class="border-b border-slate-300 h-6 mt-1"></div>
+              <div class="border-b border-slate-300 h-6 mt-1"></div>
+            </div>
+
+            <div>
+              <strong class="text-brand-700">⑥ 反思：AI 是我的「創作助手」還是「創作主角」？為什麼？</strong>
+              <div class="border-b border-slate-300 h-6 mt-1"></div>
+              <div class="border-b border-slate-300 h-6 mt-1"></div>
+              <div class="border-b border-slate-300 h-6 mt-1"></div>
+            </div>
+          </div>
+        </div>
+
+        <button onclick="window.print()" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm transition">
+          🖨️ 列印這張學習單
+        </button>
+      </div>
+    </section>
+
+    <!-- 4. 評量規準 -->
+    <section class="teach-section">
+      <div class="teach-section-header bg-gradient-to-r from-emerald-500 to-cyan-500">
+        <span class="text-2xl">📊</span>
+        <span>4. 評量規準（Rubric）</span>
+      </div>
+      <div class="teach-section-body">
+        <p class="text-sm text-slate-600 mb-3">三層分級，建議搭配學生作品集成績或學期過程性評量。</p>
+
+        <div class="border border-slate-200 rounded-lg overflow-hidden">
+          <div class="rubric-row head">
+            <span>評量向度</span>
+            <span class="rubric-cell lv-3">優 (3)</span>
+            <span class="rubric-cell lv-2">中 (2)</span>
+            <span class="rubric-cell lv-1">基 (1)</span>
+          </div>
+          <div class="rubric-row">
+            <span>📝 主題明確度</span>
+            <span class="rubric-cell lv-3">主題清楚有情感</span>
+            <span class="rubric-cell lv-2">主題可辨識</span>
+            <span class="rubric-cell lv-1">主題模糊</span>
+          </div>
+          <div class="rubric-row">
+            <span>👤 角色一致性</span>
+            <span class="rubric-cell lv-3">每段都填完整描述</span>
+            <span class="rubric-cell lv-2">部分段有描述</span>
+            <span class="rubric-cell lv-1">完全沒填</span>
+          </div>
+          <div class="rubric-row">
+            <span>🎬 分鏡邏輯</span>
+            <span class="rubric-cell lv-3">能說明各段銜接</span>
+            <span class="rubric-cell lv-2">部分段有邏輯</span>
+            <span class="rubric-cell lv-1">未理解分段意義</span>
+          </div>
+          <div class="rubric-row">
+            <span>🤖 AI 協作反思</span>
+            <span class="rubric-cell lv-3">深入反思+提改善</span>
+            <span class="rubric-cell lv-2">寫出感受</span>
+            <span class="rubric-cell lv-1">未填或敷衍</span>
+          </div>
+          <div class="rubric-row">
+            <span>🤝 課堂參與</span>
+            <span class="rubric-cell lv-3">主動分享協助同學</span>
+            <span class="rubric-cell lv-2">完成自己作品</span>
+            <span class="rubric-cell lv-1">需老師多次提示</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. 老師眉角 -->
+    <section class="teach-section">
+      <div class="teach-section-header bg-gradient-to-r from-cyan-500 to-blue-500">
+        <span class="text-2xl">💡</span>
+        <span>5. 老師上課眉角</span>
+      </div>
+      <div class="teach-section-body space-y-3 text-sm leading-relaxed text-slate-700">
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
+          <strong>🚨 上課前一定要做的事</strong>
+          <ul class="list-disc pl-5 mt-1 space-y-0.5">
+            <li>自己先用「封面接故事」跑一次，產出至少一個範例給學生看</li>
+            <li>準備一個「示範用」的影片檔（mp4），如果學生忘了帶就用這個</li>
+            <li>確認 Cloudflare Turnstile 在學校網路下能跑（有些學校 firewall 擋）</li>
+            <li>請資訊組打開 <code class="bg-white px-1 rounded">cagoooo.github.io</code> 與 <code class="bg-white px-1 rounded">*.run.app</code> 的訪問權限</li>
+          </ul>
+        </div>
+
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <strong>🎯 學生會問的常見問題（建議準備好答案）</strong>
+          <ul class="list-disc pl-5 mt-1 space-y-0.5">
+            <li>「為什麼 AI 產的畫面跟我想的不一樣？」 → 因為提示詞不夠精確，把「主角描述」填詳細試試</li>
+            <li>「我可以拿這個去比賽嗎？」 → 確認該比賽是否允許 AI 創作，需要在作者欄位寫明工具</li>
+            <li>「老師你怎麼會做這個？」 → 「這是我跟 AI 一起做的工具，網址在 footer 的 GitHub 連結」</li>
+            <li>「為什麼要分這麼多段？」 → 因為現在的 AI 影片平台一次只能產 5 秒，所以才要拆段</li>
+          </ul>
+        </div>
+
+        <div class="bg-pink-50 border border-pink-200 rounded-lg p-3">
+          <strong>🌟 進階引導</strong>（給學完基礎後想深入的學生）
+          <ul class="list-disc pl-5 mt-1 space-y-0.5">
+            <li>請學生比較「我寫的 prompt vs AI 產的 prompt」差在哪</li>
+            <li>讓學生試著自己改一段 prompt，再跑一次 Flow，看看畫面改變</li>
+            <li>進階組：用 ffmpeg 或剪映把所有 5 秒短片串成完整 25-30 秒</li>
+            <li>跨領域：跟國語結合，把學生寫的詩用這個工具配畫面</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. 延伸資源 -->
+    <section class="teach-section">
+      <div class="teach-section-header bg-gradient-to-r from-blue-500 to-violet-500">
+        <span class="text-2xl">🔗</span>
+        <span>6. 延伸資源</span>
+      </div>
+      <div class="teach-section-body space-y-3">
+        <div class="grid sm:grid-cols-2 gap-3">
+          <a href="https://labs.google/flow" target="_blank" rel="noopener" class="resource-card">
+            <strong class="text-brand-700">🎬 Google Flow</strong>
+            <p class="text-xs text-slate-500 mt-1">Google 的 AI 影片創作工具，免費試用，貼分段 prompt 產 5 秒短片</p>
+          </a>
+          <a href="https://www.canva.com/ai-video-generator/" target="_blank" rel="noopener" class="resource-card">
+            <strong class="text-brand-700">🎨 Canva AI 影片產生器</strong>
+            <p class="text-xs text-slate-500 mt-1">Canva Pro 內建，UI 友善，適合國小生操作</p>
+          </a>
+          <a href="https://suno.com" target="_blank" rel="noopener" class="resource-card">
+            <strong class="text-brand-700">🎵 Suno（產音樂）</strong>
+            <p class="text-xs text-slate-500 mt-1">配套的音樂生成工具，學生先用這個產歌再產影片</p>
+          </a>
+          <a href="https://gemini.google.com" target="_blank" rel="noopener" class="resource-card">
+            <strong class="text-brand-700">💡 Gemini（多模態）</strong>
+            <p class="text-xs text-slate-500 mt-1">免費的 AI 對話工具，可幫學生改進提示詞</p>
+          </a>
+          <a href="https://github.com/cagoooo/music-cover-storyboard" target="_blank" rel="noopener" class="resource-card">
+            <strong class="text-brand-700">📦 工具原始碼（GitHub）</strong>
+            <p class="text-xs text-slate-500 mt-1">本工具開源，老師可 fork 客製成校本版本</p>
+          </a>
+          <a href="index.html" class="resource-card">
+            <strong class="text-brand-700">🚀 立刻開始使用工具</strong>
+            <p class="text-xs text-slate-500 mt-1">回主頁實作試看看</p>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 推廣 -->
+    <section class="text-center py-6 space-y-3">
+      <p class="text-sm text-slate-600">這份教學引導歡迎自由轉發給其他老師使用。如果你用這個教案上課了，</p>
+      <p class="text-sm text-slate-600">歡迎來信分享或在 GitHub Discussions 留言給我（阿凱老師）。</p>
+      <a href="index.html" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-brand-600 to-pink-500 text-white font-bold transition hover:from-brand-700 hover:to-pink-600 shadow-lg">
+        🏠 回主頁開始使用工具
+      </a>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-12 border-t border-slate-200 bg-white/60">
+    <div class="max-w-5xl mx-auto px-4 py-6 text-center text-sm text-slate-600 space-y-2">
+      <p>
+        Made with ❤️ by
+        <a href="https://www.smes.tyc.edu.tw/modules/tadnews/page.php?ncsn=11&nsn=16#a5" target="_blank" rel="noopener" class="font-bold text-brand-700 hover:text-brand-800 underline">阿凱老師</a>
+        · 桃園市石門國小
+      </p>
+      <p class="text-xs text-slate-400">
+        © <span id="footer-year">2026</span> 封面接故事 · 開源於
+        <a href="https://github.com/cagoooo/music-cover-storyboard" target="_blank" rel="noopener" class="underline hover:text-brand-700">GitHub</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('footer-year').textContent = new Date().getFullYear();
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js').catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
