@@ -11,8 +11,8 @@ window.MCS_CONFIG = {
   // 啟用方式：Firebase Console → Project settings → Integrations → Google Analytics → 啟用
   // 啟用後 Project settings → General → 你的 Web app → SDK setup → 找到 measurementId
   // 留空時不會載入 gtag.js（不會有任何追蹤）
-  gaMeasurementId: '',
+  gaMeasurementId: 'G-CN9J9NRPCR',
 
   // 版本號（用於 PWA cache-bust）
-  version: '1.8.1',
+  version: '1.8.2',
 };
