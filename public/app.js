@@ -1570,7 +1570,7 @@
       await loadScript('https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js');
     }
     if (typeof FFmpegUtil === 'undefined') {
-      await loadScript('https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/util.js');
+      await loadScript('https://unpkg.com/@ffmpeg/util@0.12.2/dist/umd/index.js');
     }
 
     const { FFmpeg } = window.FFmpegWASM;
