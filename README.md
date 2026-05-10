@@ -64,4 +64,4 @@ MIT
 
 ---
 
-Made with ❤️ by [阿凱老師](https://www.smes.tyc.edu.tw/)
+Made with ❤️ by [阿凱老師](https://www.smes.tyc.edu.tw/modules/tadnews/page.php?ncsn=11&nsn=16#a5) · 桃園市石門國小
