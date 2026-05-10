@@ -381,18 +381,56 @@
     resultsSection.classList.remove('hidden');
     setTimeout(() => resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
 
-    // bind copy buttons
-    resultsGrid.querySelectorAll('.copy-btn').forEach(btn => {
-      btn.addEventListener('click', () => copyText(btn));
+    // bind 所有複製按鈕（segment + 整體）
+    resultsGrid.querySelectorAll('[data-copy-target]').forEach(btn => {
+      btn.addEventListener('click', () => copyByTarget(btn));
+    });
+    // bind 段落展開/收合
+    resultsGrid.querySelectorAll('.segment-row').forEach(row => {
+      row.querySelector('.segment-header').addEventListener('click', () => {
+        row.classList.toggle('expanded');
+      });
+    });
+    // bind「全部段一鍵下載 .txt」
+    resultsGrid.querySelectorAll('.btn-download-txt').forEach(btn => {
+      btn.addEventListener('click', () => downloadStyleTxt(btn));
     });
   }
 
   function renderCard(item) {
     const meta = STYLES.find(s => s.id === item.style_id) || { emoji: '🎬', label: item.style_name || '分鏡' };
-    const breakdown = (item.scene_breakdown || []).map(seg => `
-      <div class="scene-row">
-        <span class="time">${escapeHtml(seg.time || '')}</span>
-        <span class="desc"><strong>${escapeHtml(seg.shot || '')}</strong>　${escapeHtml(seg.action || '')}<br/><span class="text-slate-400 text-[11px]">氛圍：${escapeHtml(seg.mood || '')}</span></span>
+    const segments = Array.isArray(item.segments) ? item.segments : [];
+    const total = item.total_duration_seconds || item.duration_seconds || 25;
+
+    const segmentRows = segments.map((seg) => `
+      <div class="segment-row" data-seg-index="${seg.index}">
+        <div class="segment-header">
+          <span class="seg-badge">${escapeHtml(String(seg.index || ''))}</span>
+          <div class="seg-meta">
+            <div class="seg-line-1">
+              <span class="seg-time">${escapeHtml(seg.time || '')}</span>
+              <span class="seg-shot">${escapeHtml(seg.shot || '')}</span>
+              <span class="seg-duration">${escapeHtml(String(seg.duration_seconds || ''))}s</span>
+            </div>
+            <div class="seg-line-2">${escapeHtml(seg.action || '')}</div>
+            <div class="seg-line-3">氛圍：${escapeHtml(seg.mood || '')}</div>
+          </div>
+          <span class="seg-toggle" aria-hidden="true">▾</span>
+        </div>
+        <div class="segment-body">
+          <div class="seg-prompt-group">
+            <p class="seg-prompt-label">📝 中文 Prompt（這段獨立可貼）</p>
+            <div class="prompt-block" data-seg-zh="${seg.index}">${escapeHtml(seg.prompt_zh || '')}</div>
+          </div>
+          <div class="seg-prompt-group">
+            <p class="seg-prompt-label">📝 English Prompt</p>
+            <div class="prompt-block" data-seg-en="${seg.index}">${escapeHtml(seg.prompt_en || '')}</div>
+          </div>
+          <div class="seg-buttons">
+            <button type="button" class="copy-btn copy-btn-mini" data-copy-target="[data-seg-zh='${seg.index}']">📋 複製中文</button>
+            <button type="button" class="copy-btn copy-btn-mini" data-copy-target="[data-seg-en='${seg.index}']">📋 Copy EN</button>
+          </div>
+        </div>
       </div>
     `).join('');
 
@@ -401,38 +439,48 @@
         <div class="result-card-header theme-${item.style_id}">
           <span class="text-xl">${meta.emoji}</span>
           <span class="flex-1">${escapeHtml(item.style_name || meta.label)}</span>
-          <span class="text-xs font-medium opacity-80">${escapeHtml(String(item.duration_seconds || 25))}s</span>
+          <span class="text-xs font-medium opacity-80">${segments.length} 段 · ${escapeHtml(String(total))}s</span>
         </div>
         <div class="result-card-body">
-          <div>
-            <p class="result-card-section-title mb-2">分鏡分段</p>
-            <div class="space-y-1.5">${breakdown}</div>
+          <div class="segments-intro">
+            <p class="result-card-section-title">🎬 分段提示詞</p>
+            <p class="segments-hint">每段獨立可貼到 Google Flow / Canva AI / Sora / Veo / Runway / 海螺，產出 3-6 秒短片，最後串接成完整影片</p>
           </div>
-          <div>
-            <p class="result-card-section-title mb-1.5">中文 Prompt</p>
-            <div class="prompt-block" data-prompt-zh>${escapeHtml(item.prompt_zh || '')}</div>
-          </div>
-          <div>
-            <p class="result-card-section-title mb-1.5">English Prompt</p>
-            <div class="prompt-block" data-prompt-en>${escapeHtml(item.prompt_en || '')}</div>
-          </div>
-          <div class="flex gap-2">
-            <button type="button" class="copy-btn" data-copy="zh">📋 複製中文</button>
-            <button type="button" class="copy-btn" data-copy="en">📋 Copy EN</button>
+          <div class="segments-list">${segmentRows}</div>
+
+          <details class="full-prompt-details">
+            <summary>📦 整體版 prompt（給支援長 prompt 的平台一次產整部）</summary>
+            <div class="full-prompt-content">
+              <div class="seg-prompt-group">
+                <p class="seg-prompt-label">中文整體 Prompt</p>
+                <div class="prompt-block" data-full-zh>${escapeHtml(item.full_prompt_zh || item.prompt_zh || '')}</div>
+              </div>
+              <div class="seg-prompt-group">
+                <p class="seg-prompt-label">English Full Prompt</p>
+                <div class="prompt-block" data-full-en>${escapeHtml(item.full_prompt_en || item.prompt_en || '')}</div>
+              </div>
+              <div class="seg-buttons">
+                <button type="button" class="copy-btn copy-btn-mini" data-copy-target="[data-full-zh]">📋 複製整體中文</button>
+                <button type="button" class="copy-btn copy-btn-mini" data-copy-target="[data-full-en]">📋 Copy Full EN</button>
+              </div>
+            </div>
+          </details>
+
+          <div class="card-footer-actions">
+            <button type="button" class="btn-download-txt">⬇️ 下載這個風格全部段（.txt）</button>
           </div>
         </div>
       </article>
     `;
   }
 
-  async function copyText(btn) {
+  async function copyByTarget(btn) {
     const card = btn.closest('.result-card');
-    const which = btn.dataset.copy;
-    const text = which === 'zh'
-      ? card.querySelector('[data-prompt-zh]').textContent
-      : card.querySelector('[data-prompt-en]').textContent;
+    const target = btn.dataset.copyTarget;
+    const el = card.querySelector(target);
+    if (!el) return;
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(el.textContent);
       const orig = btn.textContent;
       btn.textContent = '✅ 已複製';
       btn.classList.add('copied');
@@ -440,6 +488,55 @@
     } catch (err) {
       showToast('複製失敗，請長按選取文字', 3000);
     }
+  }
+
+  function downloadStyleTxt(btn) {
+    const card = btn.closest('.result-card');
+    const styleId = card.dataset.styleId;
+    const styleName = card.querySelector('.result-card-header .flex-1').textContent.trim();
+    const lines = [];
+    lines.push(`# ${styleName} (${styleId})`);
+    lines.push('');
+    card.querySelectorAll('.segment-row').forEach((row) => {
+      const idx = row.dataset.segIndex;
+      const time = row.querySelector('.seg-time').textContent;
+      const shot = row.querySelector('.seg-shot').textContent;
+      const dur  = row.querySelector('.seg-duration').textContent;
+      const zh   = row.querySelector(`[data-seg-zh="${idx}"]`).textContent;
+      const en   = row.querySelector(`[data-seg-en="${idx}"]`).textContent;
+      lines.push(`## 分段 ${idx} · ${time} · ${shot} · ${dur}`);
+      lines.push('');
+      lines.push('### 中文 Prompt');
+      lines.push(zh);
+      lines.push('');
+      lines.push('### English Prompt');
+      lines.push(en);
+      lines.push('');
+      lines.push('---');
+      lines.push('');
+    });
+    // 整體版
+    const fullZh = card.querySelector('[data-full-zh]');
+    const fullEn = card.querySelector('[data-full-en]');
+    if (fullZh && fullZh.textContent.trim()) {
+      lines.push('## 整體版（一次產整部）');
+      lines.push('');
+      lines.push('### 中文整體 Prompt');
+      lines.push(fullZh.textContent);
+      lines.push('');
+      lines.push('### English Full Prompt');
+      lines.push(fullEn ? fullEn.textContent : '');
+      lines.push('');
+    }
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    a.href = URL.createObjectURL(blob);
+    a.download = `storyboard-${styleId}-${ts}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    showToast('✅ 已下載 .txt（含全部分段 + 整體版）');
   }
 
   // ====================================================================

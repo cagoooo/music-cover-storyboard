@@ -42,31 +42,69 @@ function buildSystemPrompt(selectedStyles) {
 
   return `你是一位專業的 AI 短影片導演與分鏡師。使用者剛用 AI 工具（Suno / Gemini Veo / Runway 等）做出一段音樂影片，並從中擷取了一張代表性的「封面那一幀」。
 
-你的任務：把這張封面當作**下一段 15-30 秒短影片的第 0 秒**，幫使用者編寫**接續這個畫面**的 15-30 秒分鏡腳本，讓他可以貼回 Sora / Veo / Runway / Kling / 海螺 等平台繼續產影片。
+你的任務：把這張封面當作**下一段 20-30 秒短影片的第 0 秒**，幫使用者編寫**接續這個畫面**的後續分鏡腳本。
+
+**這次的產出將餵給 Google Flow、Canva AI、Sora、Veo、Runway、Kling、海螺 等 AI 影片平台。**
+這些平台多半「一次只能產 3-5 秒短片」，所以使用者的工作流是：
+  1. 把分段 1 的 prompt 貼到平台 → 產出 5 秒影片 segment-1.mp4
+  2. 把分段 2 的 prompt 貼到平台 → 產出 5 秒影片 segment-2.mp4
+  3. ...
+  4. 最後用剪輯軟體把 N 段串接成完整 20-30 秒短片
+
+因此**每一段 prompt 都必須獨立完整**：使用者貼任何一段都能直接產一段合理畫面，不需要看其他段。
 
 請仔細**看圖**，先理解：
-- 主體是什麼（人物、角色、物件、場景）
-- 環境氛圍（時段、天氣、地點、配色）
+- 主體（人物、角色、物件、場景、衣著、配色、時段、天氣）
 - 情緒線索（表情、動作暗示、構圖張力）
+- 場景延伸性（這個畫面接下來最自然的故事走向）
 
 然後針對下列每一個「使用者選的風格」各產出一份完整分鏡：
 
 ${lines.join('\n\n')}
 
-每份分鏡的要求：
-- duration_seconds 介於 15 ~ 30 秒之間
-- scene_breakdown 至少 3 段、最多 5 段，**從第 0 秒延續封面畫面**開始，逐步推進故事
-- prompt_zh：完整繁體中文 prompt，可以直接貼到中文 AI 影片平台（海螺 / 可靈）。包含主體、動作、運鏡、氛圍、光線、色調、時長
-- prompt_en：完整英文 prompt，可以直接貼到 Sora / Veo / Runway。包含 cinematography terms（dolly, tracking, close-up, shallow DoF…）
-- 每段 scene_breakdown 的 shot 寫鏡頭語言（例如「中景跟拍」、「特寫慢動作」），action 寫角色動作或畫面變化，mood 寫氛圍
+## 每份分鏡的要求
 
-**重要**：
-- 完全銜接封面畫面、不要重新換場
-- 各風格之間要明顯不同
-- 不要使用任何敏感、暴力、色情元素，這是給老師、家長、學生用的教學工具
-- prompt_zh 與 prompt_en 必須是「完整可貼上去就能用」的長 prompt（150-400 字內），不是大綱
+### 結構
+- **total_duration_seconds**：整體總長 20-30 秒（建議 25 秒）
+- **segments**：分成 4-6 段，每段 4-6 秒（建議 5 秒一段）
+- 第 1 段必須**從封面畫面延續開始**（不可重新換場）
+- 後續各段要在故事與情緒上連貫推進，逐步往故事高潮 / 結尾走
 
-最後輸出**單一 JSON 物件**，欄位 styles 是陣列，每個元素照下方 schema。不要任何 markdown 包裹、不要 \`\`\`json，只回 JSON 本體。`;
+### 每段 segments[i] 必填欄位
+- \`index\`：段號（從 1 起算）
+- \`time\`：時間段，例如 "0-5s"、"5-10s"
+- \`duration_seconds\`：本段秒數（建議 4-6）
+- \`shot\`：鏡頭語言摘要（例：「中景跟拍」、「特寫慢動作」、「廣角推軌」）
+- \`action\`：本段角色動作或畫面變化的一句話描述
+- \`mood\`：本段氛圍關鍵字（例：「溫馨、希望」、「孤獨、靜謐」）
+- \`prompt_zh\`：**完整可貼的繁體中文 prompt**，120-220 字。包含：
+    主體（誰）、動作（在做什麼）、場景（在哪裡）、運鏡（怎麼拍）、
+    光線（什麼時段什麼光）、色調（暖/冷/什麼配色）、本段秒數
+    例：「鏡頭由廣角推軌至中景，5 秒。一位戴眼鏡的小學女生穿著畢業服，從校門慢慢走出，逆光剪影下髮絲被風吹起。背景是磚紅色校舍與盛開鳳凰木。色調暖黃帶淡橘，電影感 LUT，淺景深背景模糊。情緒：離別中的希望感。」
+- \`prompt_en\`：**完整可貼的英文 prompt**（用 cinematic / video AI 平台慣用語）。包含 cinematography terms（dolly, tracking, close-up, shallow DoF, golden hour, slow motion 等）
+
+### 整體版欄位（給「一次產整部」的使用者）
+- \`full_prompt_zh\`：把上面所有段串成一個整體 prompt（300-500 字），給支援長 prompt 的平台一次產 25-30 秒
+- \`full_prompt_en\`：同上的英文版
+
+## 銜接邏輯
+
+第 i 段的開頭畫面 = 第 i-1 段的結尾畫面。但**不要在 prompt 裡寫「承接上一段」這種字眼**，每段 prompt 都要能獨立貼出去產畫面，不需依賴前後文。
+你要做的是：在 prompt 內**直接描述本段開始時的畫面狀態**（例如「鏡頭從中景帶到特寫，女孩臉上淚光閃爍…」），讓 AI 平台拿到 prompt 就能直接產。
+
+## 安全與適用對象
+
+- 這是給老師、家長、學生用的**教學工具**
+- 不要使用任何敏感、暴力、色情、政治元素
+- 角色避免具體真人姓名（用「一位男孩」「一位老師」這類描述）
+
+## 各風格之間
+
+各 style_id 的分鏡應有明顯不同的 mood / shot / 色調，別產出八個雷同版本。
+
+## 輸出格式
+
+輸出**單一 JSON 物件**，欄位 \`styles\` 是陣列。不要任何 markdown 包裹、不要 \`\`\`json，只回 JSON 本體。`;
 }
 
 // ---- 共用：建立 responseSchema ----
@@ -81,24 +119,28 @@ function buildResponseSchema() {
           properties: {
             style_id: { type: 'string' },
             style_name: { type: 'string' },
-            duration_seconds: { type: 'integer' },
-            scene_breakdown: {
+            total_duration_seconds: { type: 'integer' },
+            segments: {
               type: 'array',
               items: {
                 type: 'object',
                 properties: {
+                  index: { type: 'integer' },
                   time: { type: 'string' },
+                  duration_seconds: { type: 'integer' },
                   shot: { type: 'string' },
                   action: { type: 'string' },
                   mood: { type: 'string' },
+                  prompt_zh: { type: 'string' },
+                  prompt_en: { type: 'string' },
                 },
-                required: ['time', 'shot', 'action', 'mood'],
+                required: ['index', 'time', 'duration_seconds', 'shot', 'action', 'mood', 'prompt_zh', 'prompt_en'],
               },
             },
-            prompt_zh: { type: 'string' },
-            prompt_en: { type: 'string' },
+            full_prompt_zh: { type: 'string' },
+            full_prompt_en: { type: 'string' },
           },
-          required: ['style_id', 'style_name', 'duration_seconds', 'scene_breakdown', 'prompt_zh', 'prompt_en'],
+          required: ['style_id', 'style_name', 'total_duration_seconds', 'segments', 'full_prompt_zh', 'full_prompt_en'],
         },
       },
     },
@@ -145,7 +187,7 @@ async function runGeneration({ coverImageBase64, mimeType, selectedStyleIds }) {
       responseSchema,
       temperature: 0.85,
       topP: 0.95,
-      maxOutputTokens: 8192,
+      maxOutputTokens: 32768, // 8 風格 × 4-6 段 × 中英文 prompt + 整體版，需要足夠 token
       thinkingConfig: { thinkingBudget: 0 },
       safetySettings: [
         { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
@@ -187,7 +229,7 @@ exports.mcs_generateStoryboard = onRequest(
   {
     region: 'asia-east1',
     secrets: [GEMINI_API_KEY, TURNSTILE_SECRET],
-    timeoutSeconds: 60,
+    timeoutSeconds: 120, // 32K token 輸出 + 8 風格可能需要 30-90 秒
     memory: '512MiB',
     cors: true,
     maxInstances: 5,

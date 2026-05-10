@@ -12,22 +12,22 @@
   <meta property="og:description" content="上傳 MV → 抓出封面 → 一鍵接續 15-30 秒分鏡。給老師、家長、學生免費使用。" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://cagoooo.github.io/music-cover-storyboard/" />
-  <meta property="og:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.2.1" />
+  <meta property="og:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.3.0" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="封面接故事 · 音樂影片分鏡產生器（紫粉漸層 + 影格與音符圖示）" />
   <meta property="og:locale" content="zh_TW" />
   <meta property="og:site_name" content="封面接故事" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.2.1" />
+  <meta name="twitter:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.3.0" />
 
   <!-- Favicons：SVG 給現代瀏覽器（最清晰）、ICO 給舊版 fallback、PNG 給 PWA / Android -->
-  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1.2.1" />
-  <link rel="icon" type="image/x-icon" href="favicon.ico?v=1.2.1" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=1.2.1" />
-  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=1.2.1" />
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1.2.1" />
-  <link rel="manifest" href="manifest.webmanifest?v=1.2.1" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1.3.0" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=1.3.0" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=1.3.0" />
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=1.3.0" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1.3.0" />
+  <link rel="manifest" href="manifest.webmanifest?v=1.3.0" />
 
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
@@ -61,7 +61,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="styles.css?v=1.2.1" />
+  <link rel="stylesheet" href="styles.css?v=1.3.0" />
 
   <!-- Cloudflare Turnstile -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
@@ -253,12 +253,20 @@
           <li class="flex gap-3">
             <div class="w-8 h-8 shrink-0 rounded-full bg-emerald-100 text-emerald-700 font-black flex items-center justify-center">4</div>
             <div>
-              <strong class="text-slate-900">複製貼回平台</strong> — 每張結果卡都有「複製中文 / 複製英文」按鈕，貼回 Sora / Veo / Runway / 海螺 / 可靈 繼續產下一段。
+              <strong class="text-slate-900">分段複製貼回平台</strong> — 每個風格會分成 <strong>4-6 個小段</strong>，每段約 5 秒。點開哪一段就有「📋 複製中文 / Copy EN」按鈕。
+            </div>
+          </li>
+          <li class="flex gap-3">
+            <div class="w-8 h-8 shrink-0 rounded-full bg-cyan-100 text-cyan-700 font-black flex items-center justify-center">5</div>
+            <div>
+              <strong class="text-slate-900">一段一段產 → 串成完整影片</strong> — 把第 1 段 prompt 貼到 <strong>Google Flow / Canva AI / Sora / Veo / Runway / 海螺</strong> 產出 5 秒影片，再貼第 2 段、第 3 段⋯⋯最後用任何剪輯軟體把所有段串接起來，就是一支 20-30 秒的精彩短片！
             </div>
           </li>
         </ol>
-        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800">
-          💡 <strong>老師小提示</strong>：如果學生有自己的歌詞，可以先把封面下載下來貼到 PowerPoint，標出你想要的分鏡重點再產出，效果會更貼近班級主題。
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800 space-y-2">
+          <p>💡 <strong>老師小提示</strong>：如果學生有自己的歌詞，可以先把封面下載下來貼到 PowerPoint，標出你想要的分鏡重點再產出。</p>
+          <p>🎯 <strong>為什麼要分段</strong>：Flow / Canva / Sora 等多數平台一次只能產 3-5 秒短片。我們已經幫你把整個分鏡切成適合餵的小段，每段都是<strong>獨立完整的 prompt</strong>，貼進去就能產畫面。</p>
+          <p>📦 <strong>整體版備選</strong>：每張卡底部「整體版 prompt」收疊區可一次產整部（給支援長 prompt 的平台）。</p>
         </div>
         <button id="btn-help-ok" type="button" class="w-full px-4 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold transition">開始使用</button>
       </div>
@@ -280,8 +288,8 @@
     </div>
   </footer>
 
-  <script src="config.js?v=1.2.1"></script>
-  <script src="app.js?v=1.2.1"></script>
+  <script src="config.js?v=1.3.0"></script>
+  <script src="app.js?v=1.3.0"></script>
 
   <!-- Service Worker 註冊 -->
   <script>
