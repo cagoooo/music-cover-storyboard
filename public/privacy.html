@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#7c3aed" />
+  <title>隱私政策 · 封面接故事</title>
+  <meta name="description" content="封面接故事的隱私政策 — 影片不上傳、不收集個人資料、僅匿名統計用量。" />
+
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1.7.0" />
+  <link rel="manifest" href="manifest.webmanifest?v=1.7.0" />
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        fontFamily: { sans: ['"Noto Sans TC"', 'system-ui', 'sans-serif'] },
+        colors: { brand: { 50:'#faf5ff',100:'#f3e8ff',500:'#a855f7',600:'#9333ea',700:'#7c3aed',800:'#6b21a8' } },
+      }},
+    };
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=1.7.0" />
+
+  <!-- GA4 -->
+  <script src="config.js?v=1.7.0"></script>
+  <script>
+    (function () {
+      var id = window.MCS_CONFIG && window.MCS_CONFIG.gaMeasurementId;
+      if (!id || !/^G-[A-Z0-9]+$/i.test(id)) return;
+      var s = document.createElement('script');
+      s.async = true;
+      s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(id);
+      document.head.appendChild(s);
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function () { window.dataLayer.push(arguments); };
+      gtag('js', new Date());
+      gtag('config', id, { anonymize_ip: true, page_title: '隱私政策', send_page_view: true });
+    })();
+  </script>
+</head>
+<body class="bg-gradient-to-br from-brand-50 via-white to-pink-50 min-h-screen text-slate-800 font-sans antialiased">
+
+  <header class="border-b border-brand-100 bg-white/80 backdrop-blur sticky top-0 z-30">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+      <a href="index.html" class="flex items-center gap-3 hover:opacity-80 transition">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-pink-400 flex items-center justify-center shadow-lg">
+          <span class="text-2xl">🎬</span>
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-black text-brand-800">封面接故事</h1>
+          <p class="text-[10px] sm:text-xs text-slate-500">隱私政策</p>
+        </div>
+      </a>
+      <a href="index.html" class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-lg border-2 border-brand-300 text-brand-700 bg-white hover:bg-brand-50 transition">
+        🏠 <span class="hidden sm:inline">回主頁</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8 space-y-6">
+
+    <h2 class="text-3xl font-black text-slate-900 text-center">🔒 隱私政策</h2>
+    <p class="text-center text-sm text-slate-500">最後更新：2026-05-10</p>
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-md p-6 sm:p-8 space-y-5 text-sm leading-relaxed text-slate-700">
+
+      <section class="space-y-2">
+        <h3 class="text-lg font-black text-brand-800">📹 你上傳的影片</h3>
+        <p>
+          <strong class="text-emerald-600">完全留在你瀏覽器裡，不會上傳到任何伺服器。</strong>
+          抓封面的動作（HTML5 video + canvas）是在你電腦本地執行。
+          只有你按「✨ 生成分鏡」時，<strong>那一張封面圖（PNG, base64）</strong>才會送到我們的 Cloud Functions 後端，再轉送給 Google Gemini API 做分析。
+        </p>
+        <p>處理完封面圖後，後端不會儲存它（只在 24 小時的記憶體快取保留 hash key 對應的結果，方便你重複請求時不重產）。</p>
+      </section>
+
+      <section class="space-y-2">
+        <h3 class="text-lg font-black text-brand-800">📊 我們收集的匿名統計</h3>
+        <p>本網站使用 <strong>Google Analytics 4 (GA4)</strong> 收集匿名使用統計，幫我們了解：</p>
+        <ul class="list-disc pl-5 space-y-1">
+          <li>每天造訪人次、停留時間、來源（從哪個網站連過來）</li>
+          <li>使用者選哪些風格最多、跳到哪個 AI 平台最多、複製哪種語言的 prompt 最多</li>
+          <li>產出時間、是否快取命中、錯誤率</li>
+        </ul>
+        <p class="mt-2">
+          所有資料都是<strong>匿名彙總</strong>（IP 已匿名化、不收集個人資料、不收集精確位置）。我們<strong>絕不會</strong>賣資料、不會用來投廣告、不會跟你的 Google 帳號連動。
+        </p>
+      </section>
+
+      <section class="space-y-2">
+        <h3 class="text-lg font-black text-brand-800">🍪 Cookies</h3>
+        <p>
+          GA4 會在你瀏覽器存匿名 cookie（用來算「同一人重複造訪」）。如果你不想被追蹤，可以：
+        </p>
+        <ul class="list-disc pl-5 space-y-1">
+          <li>用<strong>無痕模式</strong>造訪（cookie 關掉就清除）</li>
+          <li>裝瀏覽器插件 <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener" class="text-brand-700 underline">Google Analytics Opt-out</a></li>
+          <li>在瀏覽器設定停用第三方 cookies</li>
+        </ul>
+      </section>
+
+      <section class="space-y-2">
+        <h3 class="text-lg font-black text-brand-800">🛡️ Cloudflare Turnstile</h3>
+        <p>
+          為了防止機器人濫用 API（造成我們 quota 爆炸 = 大家用不到），網站使用 Cloudflare Turnstile 做無感人機驗證。
+          這個驗證是匿名的，<strong>不會收集你的個資</strong>，但 Cloudflare 會看到你的 IP（這是任何網站都會看到的）。
+        </p>
+      </section>
+
+      <section class="space-y-2">
+        <h3 class="text-lg font-black text-brand-800">🎓 給老師、家長、學生的承諾</h3>
+        <p>這是<strong>免費教學工具</strong>，由桃園市石門國小阿凱老師個人維護，沒有廣告、沒有收費、不收集學生作品。學生產出的分鏡 prompt 完全屬於學生本人與其家庭。</p>
+        <p>建議國小生使用時，由家長或老師陪同操作；上傳影片前先確認影片內容沒有不適合上傳到 AI 服務的內容（如他人肖像、隱私場景）。</p>
+      </section>
+
+      <section class="space-y-2">
+        <h3 class="text-lg font-black text-brand-800">📮 聯絡我們</h3>
+        <p>有疑問或想停用某項追蹤，請到 <a href="https://github.com/cagoooo/music-cover-storyboard/issues" target="_blank" rel="noopener" class="text-brand-700 underline font-bold">GitHub Issues</a> 留言，或寄 email 給阿凱老師（<code class="bg-slate-100 px-1 rounded">ipad@mail2.smes.tyc.edu.tw</code>）。</p>
+      </section>
+
+    </div>
+
+    <p class="text-center text-xs text-slate-400">
+      本政策為 v1.0，未來如有更新會在此頁面註明日期。
+    </p>
+
+  </main>
+
+  <footer class="mt-12 border-t border-slate-200 bg-white/60">
+    <div class="max-w-3xl mx-auto px-4 py-6 text-center text-sm text-slate-600 space-y-2">
+      <p>
+        Made with ❤️ by
+        <a href="https://www.smes.tyc.edu.tw/modules/tadnews/page.php?ncsn=11&nsn=16#a5" target="_blank" rel="noopener" class="font-bold text-brand-700 hover:text-brand-800 underline">阿凱老師</a>
+        · 桃園市石門國小
+      </p>
+      <p class="text-xs text-slate-400">
+        © <span id="footer-year">2026</span> 封面接故事 ·
+        <a href="index.html" class="underline hover:text-brand-700">回主頁</a> ·
+        <a href="https://github.com/cagoooo/music-cover-storyboard" target="_blank" rel="noopener" class="underline hover:text-brand-700">GitHub</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('footer-year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

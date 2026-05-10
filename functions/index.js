@@ -12,6 +12,7 @@ const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https')
 const { defineSecret } = require('firebase-functions/params');
 const { setGlobalOptions } = require('firebase-functions/v2');
 const { GoogleGenAI } = require('@google/genai');
+const crypto = require('crypto');
 const { verifyTurnstile } = require('./verify-turnstile');
 const { STYLES } = require('./styles');
 
@@ -19,6 +20,48 @@ setGlobalOptions({
   region: 'asia-east1',
   maxInstances: 5,
 });
+
+// =====================================================================
+// E2: in-memory 結果快取（24 小時 TTL，LRU eviction）
+//
+// 同一個 instance 內，若使用者用相同的封面 + 風格組合 + 進階提示再產一次，
+// 直接回傳快取結果，省 Gemini API quota（每天 1500 RPD 的 80% 都會被快取救回）。
+// =====================================================================
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const MAX_CACHE_ENTRIES = 50;          // 約 50 × ~20KB = 1MB 記憶體
+const responseCache = new Map();       // key → { ts, result }
+
+function makeCacheKey(coverBase64, styleIds, lyrics, character) {
+  const styleSorted = [...styleIds].sort().join(',');
+  const h = crypto.createHash('sha256');
+  h.update(coverBase64);
+  h.update('|' + styleSorted);
+  h.update('|' + (lyrics || ''));
+  h.update('|' + (character || ''));
+  return h.digest('hex').slice(0, 32);
+}
+
+function getCachedResult(key) {
+  const e = responseCache.get(key);
+  if (!e) return null;
+  if (Date.now() - e.ts > CACHE_TTL_MS) {
+    responseCache.delete(key);
+    return null;
+  }
+  // LRU bump：重新插入到 Map 末端
+  responseCache.delete(key);
+  responseCache.set(key, e);
+  return e.result;
+}
+
+function setCachedResult(key, result) {
+  responseCache.set(key, { ts: Date.now(), result });
+  // 超出上限，刪最舊的（Map 保留插入順序，第一個就是最舊）
+  while (responseCache.size > MAX_CACHE_ENTRIES) {
+    const oldestKey = responseCache.keys().next().value;
+    responseCache.delete(oldestKey);
+  }
+}
 
 // ---- Secrets ----
 const GEMINI_API_KEY = defineSecret('MCS_GEMINI_API_KEY');
@@ -324,8 +367,28 @@ exports.mcs_generateStoryboard = onRequest(
       }
     };
 
-    // 開頭事件，讓前端立刻知道 stream 開始（很多 proxy 沒收到第一筆才會送 header）
-    sendEvent('start', { ts: Date.now() });
+    // ---- 4. 檢查快取（E2）----
+    const validIdsForCache = (selectedStyleIds || []).filter(id => Object.prototype.hasOwnProperty.call(STYLES, id));
+    const safeLyricsForCache = typeof lyrics === 'string' ? lyrics.slice(0, 500) : '';
+    const safeCharForCache = typeof characterDescription === 'string' ? characterDescription.slice(0, 300) : '';
+    const cacheKey = makeCacheKey(coverImageBase64 || '', validIdsForCache, safeLyricsForCache, safeCharForCache);
+    const cached = getCachedResult(cacheKey);
+
+    if (cached) {
+      console.log('[cache] HIT', cacheKey.slice(0, 8), 'styles:', validIdsForCache.length);
+      // 開頭 + 直接 done，標記 cached:true 給前端顯示
+      sendEvent('start', { ts: Date.now(), cached: true });
+      // 模擬一次 chunk（讓前端 progress bar 跑一下，不然瞬間結束沒手感）
+      const fakeText = JSON.stringify(cached);
+      sendEvent('chunk', { text: fakeText.slice(0, 1), total: fakeText.length, cached: true });
+      sendEvent('done', { result: cached, cached: true });
+      res.end();
+      return;
+    }
+    console.log('[cache] MISS', cacheKey.slice(0, 8), 'styles:', validIdsForCache.length);
+
+    // 開頭事件，讓前端立刻知道 stream 開始
+    sendEvent('start', { ts: Date.now(), cached: false });
 
     try {
       const result = await runGenerationStream(
@@ -334,7 +397,9 @@ exports.mcs_generateStoryboard = onRequest(
           sendEvent('chunk', { text: chunkText, total: totalLen });
         }
       );
-      sendEvent('done', { result });
+      // 寫進快取
+      setCachedResult(cacheKey, result);
+      sendEvent('done', { result, cached: false });
       res.end();
     } catch (err) {
       let status = 'INTERNAL';

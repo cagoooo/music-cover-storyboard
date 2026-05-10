@@ -56,6 +56,16 @@
 
   const MAX_FILE_BYTES = 200 * 1024 * 1024; // 200MB
 
+  // ---- 工具：trackEvent（GA4 埋點） ----
+  function trackEvent(name, params) {
+    try {
+      if (typeof window.gtag === 'function') {
+        window.gtag('event', name, params || {});
+      }
+    } catch (_) { /* 永不阻塞 UX */ }
+  }
+  window.__mcs_trackEvent = trackEvent;
+
   // ---- 初始化 ----
   initStyleChips();
   initFileUpload();
@@ -165,6 +175,10 @@
     currentVideoUrl = URL.createObjectURL(file);
     video.src = currentVideoUrl;
     video.load();
+    trackEvent('upload_video', {
+      file_size_mb: Math.round(file.size / 1024 / 1024),
+      file_type: file.type,
+    });
   }
 
   function showError(msg) {
@@ -266,6 +280,7 @@
       a.click();
       a.remove();
       showToast('✅ 封面下載完成');
+      trackEvent('download_cover');
     });
   }
 
@@ -388,6 +403,14 @@
     const selectedIds = [...selectedStyleIds];
     const { lyrics, character } = getAdvancedFields();
 
+    const _genStart = performance.now();
+    trackEvent('generate_start', {
+      styles_count: selectedIds.length,
+      styles: selectedIds.join(','),
+      has_lyrics: !!lyrics,
+      has_character: !!character,
+    });
+
     let payload;
     try {
       const res = await fetch(cfg.functionsUrl, {
@@ -429,11 +452,25 @@
     } catch (err) {
       hideLoading();
       resetTurnstile();
+      trackEvent('generate_error', {
+        elapsed_sec: Math.round((performance.now() - _genStart) / 1000),
+        message: (err && err.message || '').slice(0, 100),
+      });
       throw err;
     }
 
     hideLoading();
     resetTurnstile();
+    const elapsedSec = Math.round((performance.now() - _genStart) / 1000);
+    const wasCached = payload && payload.__cached === true;
+    trackEvent('generate_completed', {
+      elapsed_sec: elapsedSec,
+      cached: wasCached,
+      styles_count: selectedIds.length,
+    });
+    if (wasCached) {
+      showToast('⚡ 快取命中（24 小時內同樣輸入）— 省了一次 API 呼叫', 3500);
+    }
     renderResults(payload);
   }
 
@@ -481,10 +518,14 @@
             });
           } else if (payload.type === 'done') {
             result = payload.result;
+            if (result && payload.cached === true) {
+              try { result.__cached = true; } catch (_) {}
+            }
             updateStreamingProgress({
               phase: 'done',
               received: receivedText.length,
               elapsedMs: performance.now() - startTime,
+              cached: payload.cached === true,
             });
           } else if (payload.type === 'error') {
             errorMsg = payload.message || 'AI 生成失敗';
@@ -501,7 +542,7 @@
   }
 
   // 更新 loading overlay 的進度視覺
-  function updateStreamingProgress({ phase, received, elapsedMs, tail }) {
+  function updateStreamingProgress({ phase, received, elapsedMs, tail, cached }) {
     const elCount = document.getElementById('streaming-count');
     const elPhase = document.getElementById('streaming-phase');
     const elTail  = document.getElementById('streaming-tail');
@@ -529,7 +570,11 @@
     }
     if (phase === 'done') {
       const sec = (elapsedMs / 1000).toFixed(1);
-      elPhase.textContent = `✅ 完成！共 ${received.toLocaleString()} 字（${sec}s）`;
+      if (cached) {
+        elPhase.textContent = `⚡ 快取命中（${sec}s）— 省一次 API 呼叫`;
+      } else {
+        elPhase.textContent = `✅ 完成！共 ${received.toLocaleString()} 字（${sec}s）`;
+      }
       elBar.style.width = '100%';
     }
   }
@@ -696,6 +741,15 @@
       btn.textContent = '✅ 已複製';
       btn.classList.add('copied');
       setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1500);
+
+      // 埋點：哪段、哪個語言被複製
+      const isFull = target.includes('full-');
+      const isEn = target.includes('-en');
+      trackEvent('copy_prompt', {
+        scope: isFull ? 'full' : 'segment',
+        language: isEn ? 'en' : 'zh',
+        style_id: card.dataset.styleId || '',
+      });
     } catch (err) {
       showToast('複製失敗，請長按選取文字', 3000);
     }
@@ -748,6 +802,7 @@
     a.click();
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
     showToast('✅ 已下載 .txt（含全部分段 + 整體版）');
+    trackEvent('download_txt', { style_id: styleId });
   }
 
   // ====================================================================
@@ -970,6 +1025,10 @@
       setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 
       showToast('✅ 分鏡卡片圖已下載（IG 限動尺寸 1080×1920）');
+      trackEvent('download_card', {
+        style_id: styleId,
+        segments_count: segments.length,
+      });
     } catch (err) {
       console.error('[shareCard] failed', err);
       showToast('❌ 卡片圖生成失敗：' + (err.message || '未知錯誤'), 4000);
@@ -1042,7 +1101,7 @@
       helpModal.classList.add('hidden');
       try { localStorage.setItem(SEEN_KEY, '1'); } catch (_) {}
     };
-    btnHelp.addEventListener('click', open);
+    btnHelp.addEventListener('click', () => { open(); trackEvent('view_help'); });
     btnHelpClose.addEventListener('click', close);
     btnHelpOk.addEventListener('click', close);
     helpModal.addEventListener('click', (e) => { if (e.target === helpModal) close(); });
@@ -1129,6 +1188,15 @@
     // 2. 開新分頁
     const w = window.open(url, '_blank', 'noopener,noreferrer');
 
+    // 埋點：跳到哪個平台、哪段、哪個語言
+    trackEvent('launch_platform', {
+      platform_id: platformId,
+      platform_name: platformName,
+      language: lang,
+      copied: copied,
+      context: launchCurrent.contextLabel || '',
+    });
+
     // 3. 關閉 launcher + toast 提示
     closePlatformLauncher();
     if (copied) {
@@ -1199,6 +1267,7 @@
       try {
         await navigator.share({ title, text, url });
         closeShareSheet();
+        trackEvent('share', { platform: 'webshare', context: title });
       } catch (err) {
         // 使用者取消不算錯
         if (err.name !== 'AbortError') console.warn('[share] webshare failed', err);
@@ -1215,6 +1284,7 @@
           btn.classList.remove('copied');
           btn.querySelector('.share-platform-label').textContent = orig;
         }, 1800);
+        trackEvent('share', { platform: 'copy_link', context: title });
       } catch (err) {
         showToast('複製失敗，請手動選取', 3000);
       }
@@ -1233,6 +1303,10 @@
     if (!target) return;
     const w = window.open(target, '_blank', 'noopener,noreferrer,width=600,height=600');
     if (w) closeShareSheet();
+    trackEvent('share', {
+      platform: platform,
+      context: shareCurrent && shareCurrent.title || '',
+    });
   }
 
   // 主頁分享工具入口
