@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#7c3aed" />
+  <title>封面接故事 · 音樂影片分鏡產生器</title>
+  <meta name="description" content="上傳 Gemini Veo / Suno 等 AI 音樂影片，自動抓出封面，再用 AI 接續產出 15-30 秒的後續分鏡，一鍵貼回 Sora / Veo / Runway / 海螺繼續創作。" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="封面接故事 · 音樂影片分鏡產生器" />
+  <meta property="og:description" content="上傳 MV → 抓出封面 → 一鍵接續 15-30 秒分鏡。給老師、家長、學生免費使用。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://cagoooo.github.io/music-cover-storyboard/" />
+  <meta property="og:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.0.0" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="zh_TW" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="icon" href="favicon.ico?v=1.0.0" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=1.0.0" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans TC"', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50:  '#faf5ff',
+              100: '#f3e8ff',
+              200: '#e9d5ff',
+              300: '#d8b4fe',
+              400: '#c084fc',
+              500: '#a855f7',
+              600: '#9333ea',
+              700: '#7c3aed',
+              800: '#6b21a8',
+              900: '#581c87',
+            },
+          },
+        },
+      },
+    };
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css?v=1.0.0" />
+
+  <!-- Cloudflare Turnstile -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+</head>
+<body class="bg-gradient-to-br from-brand-50 via-white to-pink-50 min-h-screen text-slate-800 font-sans antialiased">
+
+  <!-- Header -->
+  <header class="border-b border-brand-100 bg-white/70 backdrop-blur sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-pink-400 flex items-center justify-center shadow-lg shrink-0">
+          <span class="text-2xl">🎬</span>
+        </div>
+        <div class="min-w-0">
+          <h1 class="text-lg sm:text-xl font-black text-brand-800 truncate">封面接故事</h1>
+          <p class="text-[11px] sm:text-xs text-slate-500 truncate">音樂影片 → 抓封面 → AI 接續分鏡</p>
+        </div>
+      </div>
+      <button id="btn-help" type="button" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-lg border-2 border-brand-300 text-brand-700 bg-white hover:bg-brand-50 transition">
+        <span>📖</span><span class="hidden sm:inline">使用說明</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-6 sm:py-10 space-y-6 sm:space-y-8">
+
+    <!-- Hero -->
+    <section class="text-center space-y-3 py-2">
+      <h2 class="text-2xl sm:text-4xl font-black text-slate-900 leading-tight">
+        把 MV 接成 <span class="text-brand-600">完整故事</span>
+      </h2>
+      <p class="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto">
+        上傳你用 Gemini Veo / Suno 做的音樂影片，AI 自動抓出封面那一幀，再幫你想好<strong class="text-brand-700">後 15-30 秒的運鏡與故事</strong>，貼回平台繼續產影片就行。
+      </p>
+    </section>
+
+    <!-- Step 1: Upload -->
+    <section class="bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden">
+      <div class="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-brand-600 to-pink-500 text-white flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-black">1</div>
+        <h3 class="font-bold text-base sm:text-lg">上傳音樂影片</h3>
+      </div>
+      <div class="p-4 sm:p-6">
+        <label for="file-input" id="drop-zone" class="block cursor-pointer">
+          <div id="drop-zone-inner" class="rounded-xl border-2 border-dashed border-brand-300 bg-brand-50/40 hover:bg-brand-50 transition p-8 sm:p-12 text-center">
+            <div class="text-5xl sm:text-6xl mb-3">🎞️</div>
+            <p class="font-bold text-slate-700 text-sm sm:text-base">點選或拖曳影片到這裡</p>
+            <p class="text-xs sm:text-sm text-slate-500 mt-2">支援 MP4 / WebM / MOV，最大 200MB · 影片<strong>不會</strong>上傳到伺服器</p>
+          </div>
+          <input id="file-input" type="file" accept="video/mp4,video/webm,video/quicktime,video/*" class="hidden" />
+        </label>
+        <div id="file-error" class="hidden mt-3 p-3 rounded-lg bg-red-50 text-red-700 text-sm font-medium border border-red-200"></div>
+      </div>
+    </section>
+
+    <!-- Step 2: Pick frame & download cover -->
+    <section id="frame-section" class="hidden bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden">
+      <div class="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-pink-500 to-amber-500 text-white flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-black">2</div>
+        <h3 class="font-bold text-base sm:text-lg">挑出封面那一幀</h3>
+      </div>
+      <div class="p-4 sm:p-6 space-y-4">
+        <div class="grid sm:grid-cols-2 gap-4 sm:gap-6">
+          <div>
+            <p class="text-xs font-medium text-slate-500 mb-2">影片預覽</p>
+            <video id="video" class="w-full rounded-xl bg-black aspect-video" preload="metadata" muted playsinline></video>
+            <div class="mt-3">
+              <input id="time-slider" type="range" min="0" max="100" step="0.1" value="0" class="w-full accent-brand-600" />
+              <div class="flex justify-between text-xs text-slate-500 mt-1">
+                <span id="time-current">0.0s</span>
+                <span id="time-total">0.0s</span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <p class="text-xs font-medium text-slate-500 mb-2">擷取的封面</p>
+            <div class="rounded-xl bg-slate-100 aspect-video flex items-center justify-center overflow-hidden border border-slate-200">
+              <img id="cover-preview" alt="封面預覽" class="w-full h-full object-contain" />
+            </div>
+            <button id="btn-download" type="button" class="mt-3 w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-pink-600 hover:bg-pink-700 text-white font-bold transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+              <span>📥</span><span>下載這幀封面（PNG）</span>
+            </button>
+          </div>
+        </div>
+        <canvas id="canvas" class="hidden"></canvas>
+      </div>
+    </section>
+
+    <!-- Step 3: Style + generate -->
+    <section id="generate-section" class="hidden bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden">
+      <div class="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-amber-500 to-emerald-500 text-white flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-black">3</div>
+        <h3 class="font-bold text-base sm:text-lg">挑風格 → 生成後 15-30 秒分鏡</h3>
+      </div>
+      <div class="p-4 sm:p-6 space-y-4">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-sm font-bold text-slate-700">分鏡風格（多選）</p>
+            <div class="flex gap-2 text-xs">
+              <button id="btn-style-all" type="button" class="px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">全選</button>
+              <button id="btn-style-none" type="button" class="px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">全不選</button>
+            </div>
+          </div>
+          <div id="style-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
+        </div>
+
+        <div class="border-t pt-4 space-y-3">
+          <div>
+            <p class="text-sm font-bold text-slate-700 mb-2">人機驗證</p>
+            <div id="turnstile-widget"></div>
+          </div>
+          <button id="btn-generate" type="button" class="w-full inline-flex items-center justify-center gap-2 px-4 py-4 rounded-xl bg-gradient-to-r from-brand-600 to-pink-500 hover:from-brand-700 hover:to-pink-600 text-white font-black text-base sm:text-lg transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+            <span>✨</span><span>生成分鏡 prompt</span>
+          </button>
+          <p id="generate-hint" class="text-xs text-slate-500 text-center">先把封面選好、勾選風格、通過人機驗證</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 4: Results -->
+    <section id="results-section" class="hidden space-y-4">
+      <div class="flex items-center gap-3 px-2">
+        <div class="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center font-black text-white">4</div>
+        <h3 class="font-bold text-base sm:text-lg text-slate-700">產出的分鏡 prompt（一鍵複製）</h3>
+      </div>
+      <div id="results-grid" class="grid sm:grid-cols-2 gap-4"></div>
+    </section>
+
+    <!-- Loading overlay -->
+    <div id="loading" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl p-6 sm:p-8 max-w-sm text-center space-y-4 shadow-2xl">
+        <div class="text-5xl animate-bounce">🎨</div>
+        <p class="font-bold text-slate-800">AI 正在看封面、編劇本…</p>
+        <p class="text-xs text-slate-500">通常 8-15 秒，請稍候</p>
+        <div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+          <div class="h-full bg-gradient-to-r from-brand-500 to-pink-500 animate-pulse w-2/3"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-3 bg-slate-900 text-white rounded-xl shadow-2xl text-sm font-medium"></div>
+
+  </main>
+
+  <!-- Help modal -->
+  <div id="help-modal" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+      <div class="px-6 py-4 border-b flex items-center justify-between sticky top-0 bg-white">
+        <h3 class="font-black text-lg text-slate-800">📖 使用說明</h3>
+        <button id="btn-help-close" type="button" class="w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center text-2xl text-slate-500" aria-label="關閉">×</button>
+      </div>
+      <div class="p-6 space-y-5 text-sm leading-relaxed text-slate-700">
+        <p>把你用 AI 工具做的音樂影片，接成下一段更完整的故事。三步驟：</p>
+        <ol class="space-y-4">
+          <li class="flex gap-3">
+            <div class="w-8 h-8 shrink-0 rounded-full bg-brand-100 text-brand-700 font-black flex items-center justify-center">1</div>
+            <div>
+              <strong class="text-slate-900">上傳影片</strong> — 把你的 Suno / Gemini Veo / Runway 等平台做出來的 mp4 / webm 影片拖進來，影片<strong>不會</strong>離開你的瀏覽器。
+            </div>
+          </li>
+          <li class="flex gap-3">
+            <div class="w-8 h-8 shrink-0 rounded-full bg-pink-100 text-pink-700 font-black flex items-center justify-center">2</div>
+            <div>
+              <strong class="text-slate-900">挑封面那一幀</strong> — 拖時間軸選最能代表這首歌的畫面，按「下載這幀封面」就能拿到 PNG。
+            </div>
+          </li>
+          <li class="flex gap-3">
+            <div class="w-8 h-8 shrink-0 rounded-full bg-amber-100 text-amber-700 font-black flex items-center justify-center">3</div>
+            <div>
+              <strong class="text-slate-900">挑風格 → 生成分鏡</strong> — 選你想要的影像風格（可多選），AI 會看封面的畫面，幫你編寫接下來 15-30 秒的運鏡與故事。
+            </div>
+          </li>
+          <li class="flex gap-3">
+            <div class="w-8 h-8 shrink-0 rounded-full bg-emerald-100 text-emerald-700 font-black flex items-center justify-center">4</div>
+            <div>
+              <strong class="text-slate-900">複製貼回平台</strong> — 每張結果卡都有「複製中文 / 複製英文」按鈕，貼回 Sora / Veo / Runway / 海螺 / 可靈 繼續產下一段。
+            </div>
+          </li>
+        </ol>
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800">
+          💡 <strong>老師小提示</strong>：如果學生有自己的歌詞，可以先把封面下載下來貼到 PowerPoint，標出你想要的分鏡重點再產出，效果會更貼近班級主題。
+        </div>
+        <button id="btn-help-ok" type="button" class="w-full px-4 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold transition">開始使用</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-12 border-t border-slate-200 bg-white/60">
+    <div class="max-w-6xl mx-auto px-4 py-6 text-center text-sm text-slate-600 space-y-2">
+      <p>
+        Made with ❤️ by
+        <a href="https://www.smes.tyc.edu.tw/" target="_blank" rel="noopener" class="font-bold text-brand-700 hover:text-brand-800 underline">阿凱老師</a>
+        · 桃園市平鎮區山豐國民小學
+      </p>
+      <p class="text-xs text-slate-400">
+        © <span id="footer-year">2026</span> 封面接故事 · 開源於
+        <a href="https://github.com/cagoooo/music-cover-storyboard" target="_blank" rel="noopener" class="underline hover:text-brand-700">GitHub</a>
+      </p>
+    </div>
+  </footer>
+
+  <script src="config.js?v=1.0.0"></script>
+  <script src="app.js?v=1.0.0"></script>
+</body>
+</html>
