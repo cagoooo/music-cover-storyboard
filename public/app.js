@@ -61,6 +61,7 @@
   initHelpModal();
   initFooterYear();
   initTurnstile();
+  initVersionCheck();
 
   // ====================================================================
   // 風格 chip
@@ -458,6 +459,74 @@
     let seen = false;
     try { seen = !!localStorage.getItem(SEEN_KEY); } catch (_) {}
     if (!seen) setTimeout(open, 600);
+  }
+
+  // ====================================================================
+  // 版本檢查 / 更新 banner
+  // ====================================================================
+  function initVersionCheck() {
+    const banner   = document.getElementById('update-banner');
+    const btnNow   = document.getElementById('btn-update-now');
+    const btnLater = document.getElementById('btn-update-dismiss');
+    if (!banner || !btnNow || !btnLater) return;
+
+    const localVersion = (window.MCS_CONFIG && window.MCS_CONFIG.version) || '0.0.0';
+    let dismissed = false;
+
+    const showBanner = () => { if (!dismissed) banner.classList.remove('hidden'); };
+    const hideBanner = () => banner.classList.add('hidden');
+
+    // 點「立刻更新」→ 通知 SW skipWaiting + 清掉相關快取 + reload
+    btnNow.addEventListener('click', async () => {
+      btnNow.disabled = true;
+      btnNow.textContent = '更新中…';
+      try {
+        // 通知 SW 立刻接管
+        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+        }
+        // 清除所有 mcs-* cache（保險）
+        if (window.caches) {
+          const keys = await caches.keys();
+          await Promise.all(keys.filter(k => k.startsWith('mcs-')).map(k => caches.delete(k)));
+        }
+      } catch (_) {}
+      location.reload();
+    });
+
+    // 點「稍後」→ 隱藏，本次造訪不再彈
+    btnLater.addEventListener('click', () => { dismissed = true; hideBanner(); });
+
+    // 比較線上 version.json
+    const checkVersion = async () => {
+      try {
+        const res = await fetch('version.json?t=' + Date.now(), { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data && data.version && data.version !== localVersion) {
+          console.log('[version] new version available:', data.version, '(local:', localVersion, ')');
+          showBanner();
+        }
+      } catch (_) { /* offline 或 404 都吞掉 */ }
+    };
+
+    // 開站後 30 秒檢查一次，之後每 5 分鐘檢查；切回頁面立刻檢查
+    setTimeout(checkVersion, 30000);
+    setInterval(checkVersion, 5 * 60 * 1000);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') checkVersion();
+    });
+
+    // SW 觸發 controllerchange（新 SW 接管）→ 自動 reload 一次
+    if ('serviceWorker' in navigator) {
+      let reloaded = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (reloaded) return;
+        reloaded = true;
+        // 不主動 reload，讓使用者按 banner 控制；但若 banner 還沒出來就 reload 是 OK 的
+        // 留空：使用者會在下次重新整理時拿到新版
+      });
+    }
   }
 
   // ====================================================================
