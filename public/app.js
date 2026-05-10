@@ -78,6 +78,7 @@
   initAdvancedPrompt();
   initShareSheet();
   initPlatformLauncher();
+  initMerge();
 
   // ====================================================================
   // 風格 chip
@@ -1448,5 +1449,265 @@
     return String(s).replace(/[&<>"']/g, c => ({
       '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     })[c]);
+  }
+
+  // ====================================================================
+  // D4: 串接短片（ffmpeg.wasm 在瀏覽器內處理，30MB 引擎只在使用者點擊時才載）
+  // ====================================================================
+  let ffmpegInstance = null;
+  let mergeFiles = [];   // [{ id, file }]
+  let mergeBlobUrl = null;
+
+  function initMerge() {
+    const input    = document.getElementById('merge-files-input');
+    const dropZone = document.getElementById('merge-drop-zone');
+    const btnClear = document.getElementById('btn-merge-clear');
+    const btnStart = document.getElementById('btn-merge-start');
+    const btnDl    = document.getElementById('btn-merge-download');
+    if (!input || !dropZone) return;
+
+    input.addEventListener('change', (e) => {
+      addMergeFiles([...e.target.files]);
+      input.value = '';
+    });
+
+    ['dragenter', 'dragover'].forEach(ev => {
+      dropZone.addEventListener(ev, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.add('dragover');
+      });
+    });
+    ['dragleave', 'drop'].forEach(ev => {
+      dropZone.addEventListener(ev, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove('dragover');
+      });
+    });
+    dropZone.addEventListener('drop', (e) => {
+      const files = [...e.dataTransfer.files].filter(f => f.type.startsWith('video/'));
+      if (files.length) addMergeFiles(files);
+    });
+
+    btnClear.addEventListener('click', clearMergeFiles);
+    btnStart.addEventListener('click', () => startMerge().catch(err => console.error(err)));
+    btnDl.addEventListener('click', downloadMerged);
+  }
+
+  function addMergeFiles(files) {
+    files.forEach((f) => {
+      if (!f.type.startsWith('video/')) return;
+      mergeFiles.push({ id: 'm' + Date.now() + '-' + Math.random().toString(36).slice(2, 6), file: f });
+    });
+    renderMergeList();
+    trackEvent('merge_add_files', { count: files.length, total: mergeFiles.length });
+  }
+
+  function renderMergeList() {
+    const list = document.getElementById('merge-file-list');
+    const btnStart = document.getElementById('btn-merge-start');
+    if (!list) return;
+    list.innerHTML = mergeFiles.map((m, i) => `
+      <li class="merge-file-item" data-id="${m.id}">
+        <span class="merge-file-num">${i + 1}</span>
+        <span class="merge-file-name" title="${escapeHtml(m.file.name)}">${escapeHtml(m.file.name)}</span>
+        <span class="merge-file-size">${(m.file.size / 1024 / 1024).toFixed(1)} MB</span>
+        <span class="merge-file-actions">
+          <button type="button" data-up title="上移">↑</button>
+          <button type="button" data-down title="下移">↓</button>
+          <button type="button" data-remove title="移除">×</button>
+        </span>
+      </li>
+    `).join('');
+
+    list.querySelectorAll('[data-up]').forEach(b => b.addEventListener('click', e => moveMergeFile(e.target.closest('li').dataset.id, -1)));
+    list.querySelectorAll('[data-down]').forEach(b => b.addEventListener('click', e => moveMergeFile(e.target.closest('li').dataset.id, 1)));
+    list.querySelectorAll('[data-remove]').forEach(b => b.addEventListener('click', e => removeMergeFile(e.target.closest('li').dataset.id)));
+
+    btnStart.disabled = mergeFiles.length < 2;
+  }
+
+  function moveMergeFile(id, delta) {
+    const idx = mergeFiles.findIndex(m => m.id === id);
+    if (idx < 0) return;
+    const newIdx = idx + delta;
+    if (newIdx < 0 || newIdx >= mergeFiles.length) return;
+    [mergeFiles[idx], mergeFiles[newIdx]] = [mergeFiles[newIdx], mergeFiles[idx]];
+    renderMergeList();
+  }
+
+  function removeMergeFile(id) {
+    mergeFiles = mergeFiles.filter(m => m.id !== id);
+    renderMergeList();
+  }
+
+  function clearMergeFiles() {
+    mergeFiles = [];
+    if (mergeBlobUrl) { URL.revokeObjectURL(mergeBlobUrl); mergeBlobUrl = null; }
+    document.getElementById('merge-result').classList.add('hidden');
+    document.getElementById('merge-progress').classList.add('hidden');
+    renderMergeList();
+  }
+
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.crossOrigin = 'anonymous';
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('load script failed: ' + src));
+      document.head.appendChild(s);
+    });
+  }
+
+  async function loadFFmpeg(setPhase) {
+    if (ffmpegInstance) return ffmpegInstance;
+
+    setPhase('📦 第一次使用：下載 FFmpeg 引擎中（約 30MB，請耐心等候）…');
+
+    if (typeof FFmpegWASM === 'undefined') {
+      await loadScript('https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js');
+    }
+    if (typeof FFmpegUtil === 'undefined') {
+      await loadScript('https://unpkg.com/@ffmpeg/util@0.12.1/dist/umd/util.js');
+    }
+
+    const { FFmpeg } = window.FFmpegWASM;
+    const { toBlobURL, fetchFile } = window.FFmpegUtil;
+    const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
+
+    const ff = new FFmpeg();
+    ff.on('log', ({ message }) => {
+      const elLog = document.getElementById('merge-log');
+      if (elLog) elLog.textContent = (message || '').slice(-220);
+    });
+    ff.on('progress', ({ progress }) => {
+      const elBar = document.getElementById('merge-bar');
+      if (elBar && progress >= 0) {
+        const pct = Math.max(0, Math.min(1, progress)) * 100;
+        elBar.style.width = pct.toFixed(1) + '%';
+      }
+    });
+
+    setPhase('📦 引擎下載完成，初始化中…');
+    await ff.load({
+      coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+      wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+    });
+
+    ffmpegInstance = ff;
+    ffmpegInstance._fetchFile = fetchFile;
+    return ff;
+  }
+
+  async function startMerge() {
+    if (mergeFiles.length < 2) {
+      showToast('至少要 2 個影片才能串接', 3000);
+      return;
+    }
+
+    const btnStart = document.getElementById('btn-merge-start');
+    const progress = document.getElementById('merge-progress');
+    const result   = document.getElementById('merge-result');
+    const phase    = document.getElementById('merge-phase');
+    const bar      = document.getElementById('merge-bar');
+
+    const setPhase = (text) => { if (phase) phase.textContent = text; };
+
+    btnStart.disabled = true;
+    progress.classList.remove('hidden');
+    result.classList.add('hidden');
+    bar.style.width = '0%';
+
+    const _start = performance.now();
+    const n = mergeFiles.length;
+    trackEvent('merge_start', { segments_count: n });
+
+    try {
+      const ff = await loadFFmpeg(setPhase);
+
+      setPhase('📤 寫入檔案到 FFmpeg 沙盒…');
+      const inputArgs = [];
+      for (let i = 0; i < n; i++) {
+        const f = mergeFiles[i].file;
+        const ext = (f.name.match(/\.[^.]+$/)?.[0] || '.mp4').toLowerCase();
+        const fname = `seg${i}${ext}`;
+        await ff.writeFile(fname, await ff._fetchFile(f));
+        inputArgs.push('-i', fname);
+      }
+
+      setPhase('🎬 串接中…（依影片長度與電腦速度，可能 1-3 分鐘）');
+      bar.style.width = '0%';
+
+      // 統一 scale 到 1280×720（保留比例 + 黑邊填補）然後 concat
+      // 無音軌（-an）：避免不同來源 audio codec 撞衝突
+      const filterScale = mergeFiles.map((_, i) =>
+        `[${i}:v]scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2:black,setsar=1,fps=30[v${i}]`
+      ).join(';');
+      const filterConcat = `${mergeFiles.map((_, i) => `[v${i}]`).join('')}concat=n=${n}:v=1:a=0[outv]`;
+
+      const args = [
+        ...inputArgs,
+        '-filter_complex', `${filterScale};${filterConcat}`,
+        '-map', '[outv]',
+        '-c:v', 'libx264',
+        '-preset', 'ultrafast',
+        '-crf', '23',
+        '-pix_fmt', 'yuv420p',
+        '-an',
+        'output.mp4'
+      ];
+
+      await ff.exec(args);
+
+      setPhase('📥 讀出結果…');
+      const data = await ff.readFile('output.mp4');
+      // ffmpeg.wasm 0.12 readFile 回傳 Uint8Array
+      const blob = new Blob([data.buffer || data], { type: 'video/mp4' });
+
+      // 清掉 ffmpeg 沙盒檔案防 OOM
+      try {
+        for (let i = 0; i < n; i++) {
+          const ext = (mergeFiles[i].file.name.match(/\.[^.]+$/)?.[0] || '.mp4').toLowerCase();
+          await ff.deleteFile(`seg${i}${ext}`).catch(() => {});
+        }
+        await ff.deleteFile('output.mp4').catch(() => {});
+      } catch (_) {}
+
+      if (mergeBlobUrl) URL.revokeObjectURL(mergeBlobUrl);
+      mergeBlobUrl = URL.createObjectURL(blob);
+      const preview = document.getElementById('merge-preview');
+      preview.src = mergeBlobUrl;
+
+      const elapsedSec = ((performance.now() - _start) / 1000).toFixed(1);
+      const sizeMB = (blob.size / 1024 / 1024).toFixed(1);
+      setPhase(`✅ 完成！${sizeMB} MB · 耗時 ${elapsedSec}s`);
+      bar.style.width = '100%';
+      result.classList.remove('hidden');
+      result.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      trackEvent('merge_completed', { segments_count: n, size_mb: Math.round(parseFloat(sizeMB)), elapsed_sec: Math.round(elapsedSec) });
+
+    } catch (err) {
+      console.error('[merge] failed', err);
+      setPhase('❌ 串接失敗：' + ((err && err.message) || '未知錯誤'));
+      showToast('串接失敗，可能是影片格式不支援或記憶體不足', 5000);
+      trackEvent('merge_error', { message: ((err && err.message) || '').slice(0, 100), segments_count: n });
+    } finally {
+      btnStart.disabled = false;
+    }
+  }
+
+  function downloadMerged() {
+    if (!mergeBlobUrl) return;
+    const a = document.createElement('a');
+    const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    a.href = mergeBlobUrl;
+    a.download = `merged-${ts}.mp4`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    showToast('✅ 影片已下載');
+    trackEvent('download_merged');
   }
 })();

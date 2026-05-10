@@ -14,5 +14,5 @@ window.MCS_CONFIG = {
   gaMeasurementId: 'G-CN9J9NRPCR',
 
   // 版本號（用於 PWA cache-bust）
-  version: '1.8.2',
+  version: '1.9.0',
 };

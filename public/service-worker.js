@@ -10,7 +10,7 @@
  *   activate 時把舊版 cache 全部刪掉，立刻接管所有頁面。
  */
 
-const CACHE_VERSION = '1.8.2';
+const CACHE_VERSION = '1.9.0';
 const STATIC_CACHE = `mcs-static-v${CACHE_VERSION}`;
 const HTML_CACHE   = `mcs-html-v${CACHE_VERSION}`;
 
@@ -82,16 +82,19 @@ self.addEventListener('fetch', (event) => {
   // 跳過非 http(s)（如 chrome-extension:）
   if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
 
-  // 跳過 Cloud Functions / Cloud Run（API 永遠走網路）
+  // 跳過 Cloud Functions / Cloud Run / 各種第三方 CDN（API 永遠走網路；大檔不該佔 SW cache 額度）
   if (
     url.hostname.endsWith('.cloudfunctions.net') ||
     url.hostname.endsWith('.run.app') ||
     url.hostname.includes('challenges.cloudflare.com') ||
     url.hostname.includes('cdn.tailwindcss.com') ||
     url.hostname.includes('fonts.googleapis.com') ||
-    url.hostname.includes('fonts.gstatic.com')
+    url.hostname.includes('fonts.gstatic.com') ||
+    url.hostname.includes('unpkg.com') ||             // ffmpeg.wasm 30MB+，瀏覽器自己快取就好
+    url.hostname.includes('googletagmanager.com') ||  // GA4 gtag.js
+    url.hostname.includes('google-analytics.com')
   ) {
-    return; // 預設 fetch，不快取
+    return; // 預設 fetch，不走 SW
   }
 
   // version.json 必須永遠拿最新（不然版本檢查 banner 沒用）

@@ -12,22 +12,22 @@
   <meta property="og:description" content="上傳 MV → 抓出封面 → 一鍵接續 15-30 秒分鏡。給老師、家長、學生免費使用。" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://cagoooo.github.io/music-cover-storyboard/" />
-  <meta property="og:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.8.2" />
+  <meta property="og:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.9.0" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="封面接故事 · 音樂影片分鏡產生器（紫粉漸層 + 影格與音符圖示）" />
   <meta property="og:locale" content="zh_TW" />
   <meta property="og:site_name" content="封面接故事" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.8.2" />
+  <meta name="twitter:image" content="https://cagoooo.github.io/music-cover-storyboard/og-image.png?v=1.9.0" />
 
   <!-- Favicons：SVG 給現代瀏覽器（最清晰）、ICO 給舊版 fallback、PNG 給 PWA / Android -->
-  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1.8.2" />
-  <link rel="icon" type="image/x-icon" href="favicon.ico?v=1.8.2" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=1.8.2" />
-  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=1.8.2" />
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1.8.2" />
-  <link rel="manifest" href="manifest.webmanifest?v=1.8.2" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1.9.0" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico?v=1.9.0" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=1.9.0" />
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png?v=1.9.0" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1.9.0" />
+  <link rel="manifest" href="manifest.webmanifest?v=1.9.0" />
 
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
@@ -61,7 +61,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="styles.css?v=1.8.2" />
+  <link rel="stylesheet" href="styles.css?v=1.9.0" />
 
   <!-- Cloudflare Turnstile -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
@@ -220,6 +220,51 @@
         <h3 class="font-bold text-base sm:text-lg text-slate-700">產出的分鏡 prompt（一鍵複製）</h3>
       </div>
       <div id="results-grid" class="grid sm:grid-cols-2 gap-4"></div>
+    </section>
+
+    <!-- Step 5: Merge 串接短片（ffmpeg.wasm，瀏覽器內處理） -->
+    <section id="merge-section" class="bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden">
+      <div class="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-black">5</div>
+        <h3 class="font-bold text-base sm:text-lg">串接成完整短片（瀏覽器內，免裝軟體）</h3>
+      </div>
+      <div class="p-4 sm:p-6 space-y-4">
+        <p class="text-sm text-slate-600 leading-relaxed">
+          把你在 <strong>Flow / Canva AI / Anijam / 海螺</strong> 等平台產出的短片下載後，全部選進來這裡，
+          系統會在<strong>你的瀏覽器內</strong>用 FFmpeg 串成一支完整影片，<strong>不上傳任何檔案</strong>。
+        </p>
+        <div class="merge-warn">
+          ⚠️ 第一次使用會下載 FFmpeg 引擎（約 30MB，下次秒開）。建議連 Wi-Fi、用 8GB+ RAM 的電腦操作。手機可能會卡。
+        </div>
+
+        <label for="merge-files-input" id="merge-drop-zone" class="merge-drop-zone">
+          <span class="merge-drop-icon">📁</span>
+          <span class="merge-drop-text">點此或拖曳影片檔（可一次多選）</span>
+          <span class="merge-drop-hint">支援 MP4 / WebM / MOV，建議每段 5-10 秒</span>
+          <input type="file" id="merge-files-input" multiple accept="video/mp4,video/webm,video/quicktime,video/*" class="hidden" />
+        </label>
+
+        <ul id="merge-file-list" class="merge-file-list"></ul>
+
+        <div class="merge-actions">
+          <button id="btn-merge-clear" type="button" class="merge-btn-secondary">🗑 清空</button>
+          <button id="btn-merge-start" type="button" class="merge-btn-primary" disabled>✨ 串接成一支影片</button>
+        </div>
+
+        <div id="merge-progress" class="hidden">
+          <p id="merge-phase" class="merge-phase">準備中…</p>
+          <div class="merge-progress-bar"><div id="merge-bar" class="merge-progress-fill"></div></div>
+          <p id="merge-log" class="merge-log"></p>
+        </div>
+
+        <div id="merge-result" class="hidden">
+          <p class="text-xs font-bold text-emerald-700 mb-2">✅ 串接完成！可以預覽再下載：</p>
+          <video id="merge-preview" controls playsinline class="merge-video-preview"></video>
+          <div class="merge-result-actions">
+            <button id="btn-merge-download" type="button" class="merge-btn-primary">📥 下載完整影片（mp4）</button>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Loading overlay（streaming 即時進度）-->
@@ -433,7 +478,7 @@
           <li class="flex gap-3">
             <div class="w-8 h-8 shrink-0 rounded-full bg-violet-100 text-violet-700 font-black flex items-center justify-center">6</div>
             <div>
-              <strong class="text-slate-900">最後串接成完整影片</strong> — 一段一段產出 5 秒短片後，用<strong>剪映 / CapCut / Canva 影片編輯器</strong> 等任何剪輯軟體把所有段串接起來，就是一支 20-30 秒的精彩短片！
+              <strong class="text-slate-900">回網站一鍵串接成完整影片</strong> — 拿到所有平台產出的 5 秒短片後，回到本網站最下方「<strong>🎞️ 串接成完整短片</strong>」區塊，多選那些短片上傳，瀏覽器內就會用 FFmpeg 把它們合成一支完整 20-30 秒影片。<strong>免裝任何剪輯軟體</strong>、影片不上傳到任何伺服器！
             </div>
           </li>
         </ol>
@@ -471,7 +516,7 @@
     </div>
   </footer>
 
-  <script src="config.js?v=1.8.2"></script>
+  <script src="config.js?v=1.9.0"></script>
 
   <!-- Google Analytics 4 / Firebase Analytics（依 config.gaMeasurementId 動態載入） -->
   <script>
@@ -493,7 +538,7 @@
     })();
   </script>
 
-  <script src="app.js?v=1.8.2"></script>
+  <script src="app.js?v=1.9.0"></script>
 
   <!-- Service Worker 註冊 -->
   <script>
