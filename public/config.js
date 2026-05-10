@@ -8,5 +8,5 @@ window.MCS_CONFIG = {
   turnstileSiteKey: '0x4AAAAAADMPpnhO_uRA0xGi',
 
   // 版本號（用於 PWA cache-bust）
-  version: '1.2.0',
+  version: '1.2.1',
 };
