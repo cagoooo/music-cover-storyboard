@@ -107,7 +107,7 @@ MIT
 
 ---
 
-Made with ❤️ by [阿凱老師](https://www.smes.tyc.edu.tw/modules/school/index.php?department_id=2&zone_id=0&page_id=2&content_id=11&type=news&from_op=all_news#a5) · 桃園市石門國小
+Made with ❤️ by [阿凱老師](https://cagoooo.github.io/Akai/) · 桃園市石門國小
 
 ---
 
