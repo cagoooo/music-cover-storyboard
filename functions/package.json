@@ -4,7 +4,7 @@
   "description": "Cloud Functions backend for 封面接故事 — Gemini multimodal storyboard generator",
   "main": "index.js",
   "engines": {
-    "node": "20"
+    "node": "22"
   },
   "scripts": {
     "lint": "eslint .",
